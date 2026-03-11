@@ -1,0 +1,175 @@
+/* assets/css/manual_guide.css */
+
+/* 1. แก้ไขปัญหา Dropdown ถูกตัดขอบตาราง (สำคัญที่สุด) */
+.table-responsive {
+    /* ยอมให้เนื้อหาที่เกินขอบแสดงผลออกมาได้ เพื่อให้ Dropdown ไม่แหว่ง */
+    overflow: visible !important;
+}
+
+/* 2. ปรับแต่ง Dropdown ให้ลอยลอยอิสระเหนือส่วนประกอบอื่น */
+.dropdown-menu {
+    position: absolute !important;
+    z-index: 9999 !important; /* บังคับให้อยู่บนสุดเหนือทุกเลเยอร์ */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    min-width: 200px;
+    border-radius: 12px !important;
+    padding: 0.5rem 0;
+    margin-top: 5px !important;
+}
+
+/* ปรับแต่งปุ่มใน Dropdown ให้กดง่ายด้วยนิ้วมือ (Touch Target) สำหรับ iPhone 14 Pro Max */
+.dropdown-item {
+    padding: 12px 16px !important;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.dropdown-item i {
+    font-size: 1.2rem;
+    margin-right: 12px;
+}
+
+/* 3. หัวใจสำคัญ: เพิ่มพื้นที่จำลองด้านล่างสุด */
+/* ป้องกันกรณีมีข้อมูลน้อยแล้ว Dropdown ทิ่มลงด้านล่างจนหลุดขอบหน้าจอเบราว์เซอร์ */
+.container.py-4 {
+    padding-bottom: 350px !important; 
+    min-height: 100vh;
+}
+
+/* 4. ปรับแต่งส่วนตารางให้ดูง่ายและพอดีหน้าจอ */
+.thumb {
+    width: 100px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+/* ปรับปรุงการแสดงผลบนมือถือ */
+@media (max-width: 768px) {
+    .thumb {
+        width: 80px;
+        height: 55px;
+    }
+    
+    .table td {
+        padding: 0.85rem 0.5rem; /* เพิ่มพื้นที่แนวตั้งให้กดง่ายขึ้น */
+    }
+
+    .h3 {
+        font-size: 1.5rem;
+    }
+}
+/* บังคับให้พื้นที่ตารางมีที่ว่างด้านล่างเสมอ */
+.table-responsive {
+    overflow: visible !important; 
+    min-height: 400px !important; /* เว้นที่ไว้ให้เมนูกางออกได้ครบแม้อีกแค่ 1 แถว */
+}
+
+/* ปรับแต่งเมนูให้ดูพรีเมียมและกดง่ายบน iPhone 14 Pro Max */
+.dropdown-menu {
+    border: 0 !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+    border-radius: 15px !important;
+    min-width: 220px !important;
+    padding: 8px !important;
+    /* บังคับให้ลอยอยู่บนสุดเสมอ */
+    z-index: 99999 !important;
+}
+
+.dropdown-item {
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 2px;
+}
+
+/* เพิ่มระยะห่างให้ Container ด้านล่างสุด */
+.container.py-4 {
+    padding-bottom: 200px !important;
+}
+/*  */
+.thumb { width: 100px; height: 70px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+.table td, .table th { vertical-align: middle; }
+.badge-soft { background: #eef2ff; color: #1d4ed8; }
+.table-hover tbody tr:hover { background-color: #f8f9fa; cursor: pointer; }
+.btn-module { transition: all 0.2s; border-width: 2px; }
+.btn-module:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+/* Fix ขนาดรูปใน Card มือถือไม่ให้ดันเนื้อหา */
+.card-instrument img {
+    width: 100%;
+    height: 110px; /* กำหนดความสูงคงที่ */
+    object-fit: cover; /* ตัดรูปให้พอดีกรอบ */
+}
+
+/* บังคับให้เมนู Dropdown อยู่ชั้นบนสุดเสมอ */
+.dropdown-menu.show {
+    z-index: 9999 !important;
+}
+
+/* เมื่อมีการเปิดเมนู ให้ Card นั้นๆ ลอยตัวสูงกว่า Card อื่น */
+.card-instrument:has(.dropdown-menu.show) {
+    z-index: 1050 !important;
+    position: relative;
+}
+
+/* ขยายพื้นที่การกดไอคอนสามจุดให้จิ้มง่ายขึ้นบนมือถือ */
+.bi-three-dots-vertical {
+    padding: 12px;
+    margin: -10px;
+    cursor: pointer;
+    display: inline-block;
+}
+    .container.py-4 {
+        padding-bottom: 0 !important;
+    }
+
+    /* ลดระยะห่างใต้ตาราง/การ์ด */
+    .card.mb-4 {
+        margin-bottom: 1rem !important;
+    }
+
+    /* ปรับ Pagination ให้นิ่งและกระชับ */
+    nav.py-3 {
+        padding-top: 0 !important;
+        padding-bottom: 1rem !important;
+    }
+
+    .pagination .page-link {
+        transition: none !important;
+        transform: none !important;
+    }
+
+    /* ปรับแต่ง Footer ให้กระชับ (Compact Footer) */
+.main-footer {
+    background-color: #fff;
+    border-top: 1px solid #dee2e6;
+    color: #869099;
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+        .main-footer {
+            padding: 10px;
+            font-size: 0.7rem;
+        }
+}
+.table-thumb-box{
+    width:120px;
+    height:120px;
+    border-radius:10px;
+    overflow:hidden;
+    background:#f6f7f9;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.table-thumb-box img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+

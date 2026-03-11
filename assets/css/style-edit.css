@@ -1,0 +1,24 @@
+/* assets/css/style-edit.css */
+.thumb { 
+    width: 160px; 
+    height: 120px; 
+    object-fit: cover; 
+    border-radius: 10px; 
+    border: 1px solid #dee2e6; 
+}
+
+/* เพิ่มสไตล์สำหรับการลากวาง */
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: #f1f5f9 !important;
+    border: 2px dashed #3b82f6 !important;
+}
+
+.sortable-item {
+    cursor: grab;
+    touch-action: none; /* สำคัญมากสำหรับมือถือ */
+}
+
+.sortable-item:active {
+    cursor: grabbing;
+}

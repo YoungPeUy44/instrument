@@ -1,0 +1,50 @@
+ /* 1. แก้ไขหน้าจอบีบตัวบนมือถือ */
+        .container {
+            max-width: 100% !important;
+            padding: 15px !important;
+        }
+        @media (min-width: 992px) {
+            .container { max-width: 960px !important; }
+        }
+
+        /* 2. จัดระเบียบ Grid รูปภาพ */
+        .img-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        @media (min-width: 768px) {
+            .img-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+        }
+
+        .thumb-link {
+            display: block;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            aspect-ratio: 1/1;
+        }
+        .thumb-link:hover { transform: scale(1.03); }
+        .thumb-link img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 3. ปรับแต่ง Config Text เป็นสีดำตามต้องการ */
+        .config-header {
+            background-color: #212529 !important; /* พื้นหลังส่วนหัวสีดำ */
+            color: #ffffff !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+        .config-area {
+            background-color: #1e1e1e !important; /* พื้นหลังเนื้อหาสีดำเข้ม */
+            color: #00ff00 !important; /* ตัวอักษรสีเขียวแบบ Code Editor หรือเปลี่ยนเป็น #ffffff */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            border: 1px solid #333;
+            border-radius: 0 0 8px 8px !important;
+            resize: none;
+            line-height: 1.5;
+        }
