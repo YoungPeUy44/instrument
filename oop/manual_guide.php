@@ -1,7 +1,7 @@
 <?php
 session_start();
-// var_dump($_SESSION);
 $ins_id = (int)($_GET['id'] ?? 0);
+// var_dump($_SESSION);
 
 // if (!isset($_SESSION['user_instrument']) || $_SESSION['user_instrument'] != "1") { 
 //     echo "
@@ -24,10 +24,6 @@ $ins_id = (int)($_GET['id'] ?? 0);
 //     exit; 
 // }
 
-// ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 require_once __DIR__ . '/../config/paths.php';
 require_once __DIR__ . '/../db/db.php';
 require_once __DIR__ . '/../config/auth.php';
@@ -36,11 +32,12 @@ require_once __DIR__ . '/../config/helpers.php';
 $connpeuy = db();
 $connpeuy->set_charset('utf8mb4');
 
-// ---------- 1) รับพารามิเตอร์ค้นหา และการแบ่งหน้า ----------
+// ---------- 1) รับพารามิเตอร์ค้นหา, การแบ่งหน้า และการเรียงลำดับ ----------
 $kw          = isset($_GET['kw']) ? trim($_GET['kw']) : '';
 $category_id = isset($_GET['category_id']) ? (int)$_GET['category_id'] : 0;
+$sort        = $_GET['sort'] ?? 'desc'; 
+$sort_order  = ($sort === 'asc') ? 'ASC' : 'DESC';
 
-// ระบบแบ่งหน้า: แสดงหน้าละ 10 เครื่อง
 $items_per_page = 10; 
 $current_page   = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($current_page < 1) $current_page = 1;
@@ -48,69 +45,62 @@ $offset         = ($current_page - 1) * $items_per_page;
 
 // ---------- 2) โหลดตัวเลือกหมวดหมู่ ----------
 $cats = [];
-// ใช้ atm_category_id และ atm_category_name ตามไฟล์ automate_category.sql
 $catSql = "SELECT atm_category_id AS categories_id, atm_category_name AS name FROM automate_category ORDER BY atm_category_name";
 if ($res = $connpeuy->query($catSql)) {
     while ($row = $res->fetch_assoc()) { $cats[] = $row; }
     $res->free();
 }
 
-// ---------- 3) คำนวณจำนวนรายการทั้งหมด (สำหรับ Pagination) ----------
-$countSql = "SELECT COUNT(*) as total 
-             FROM instruments i 
-             INNER JOIN automate_model m ON i.ins_id = m.atm_model_id 
-             WHERE 1=1"; // ⭐ เปลี่ยนจุดที่เชื่อมจากเดิมที่ใช้ tmpname
-$cParams = [];
-$cTypes   = '';
+// ---------- 3) สร้าง WHERE Clause ----------
+$where_clauses = ["1=1"];
+$params = [];
+$types  = "";
 
 if ($kw !== '') {
-    $countSql .= " AND m.atm_model_name LIKE ? "; 
-    $cParams[] = '%' . $kw . '%';
-    $cTypes   .= 's';
+    $where_clauses[] = "m.atm_model_name LIKE ?";
+    $params[] = "%$kw%";
+    $types .= "s";
 }
 if ($category_id > 0) {
-    // ⭐ ต้องใช้ ref_atm_category_id ตามไฟล์ automate_model.sql
-    $countSql .= " AND m.ref_atm_category_id = ? "; 
-    $cParams[] = $category_id;
-    $cTypes   .= 'i';
+    $where_clauses[] = "m.ref_atm_category_id = ?";
+    $params[] = $category_id;
+    $types .= "i";
 }
+$where_sql = implode(" AND ", $where_clauses);
 
-$stmtCount = $connpeuy->prepare($countSql);
-if ($cParams) { $stmtCount->bind_param($cTypes, ...$cParams); }
-$stmtCount->execute();
-$total_items = $stmtCount->get_result()->fetch_assoc()['total'];
+// ---------- 4) คำนวณจำนวนรายการทั้งหมด ----------
+$count_sql = "SELECT COUNT(*) FROM instruments i 
+              INNER JOIN automate_model m ON i.ins_id = m.atm_model_id 
+              WHERE $where_sql";
+$stmt_count = $connpeuy->prepare($count_sql);
+if (!empty($params)) $stmt_count->bind_param($types, ...$params);
+$stmt_count->execute();
+$total_items = $stmt_count->get_result()->fetch_row()[0];
 $total_pages = ceil($total_items / $items_per_page);
 
-// ---------- 4) ดึงข้อมูลรายการเครื่องตรวจแบบ LIMIT ----------
-$sql = "
-SELECT 
-    i.ins_id, 
-    i.equipment_image, 
-    i.created_at, 
-    i.updated_at,
-    m.atm_model_name AS name,           
-    m.ref_atm_status_manual_id,         
-    c.atm_category_name AS category_name,
-    t.cable_name AS cable_name
-FROM instruments i
-INNER JOIN automate_model m ON i.ins_id = m.atm_model_id -- ⭐ เชื่อมด้วย ID โดยตรง
-INNER JOIN automate_category c ON m.ref_atm_category_id = c.atm_category_id
-LEFT JOIN instrument_cable_types t ON t.cable_id = i.cable_type_id
-WHERE 1=1
-";
+// ---------- 5) ดึงข้อมูลรายการ (Desktop/Mobile) พร้อม Join ตารางสถานะ ----------
+$sql = "SELECT i.*, 
+               m.atm_model_name AS name, 
+               m.ref_atm_status_manual_id, -- ดึง ID สถานะมาจาก automate_model
+               c.atm_category_name AS category_name, 
+               t.cable_name
+        FROM instruments i
+        INNER JOIN automate_model m ON i.ins_id = m.atm_model_id
+        INNER JOIN automate_category c ON m.ref_atm_category_id = c.atm_category_id
+        LEFT JOIN instrument_cable_types t ON t.cable_id = i.cable_type_id
+        WHERE $where_sql
+        ORDER BY i.updated_at $sort_order 
+        LIMIT ?, ?";
 
-// เงื่อนไขการค้นหายังคงอิงจากตารางหลัก (m)
-if ($kw !== '') { $sql .= " AND m.atm_model_name LIKE ? "; }
-if ($category_id > 0) { $sql .= " AND m.ref_atm_category_id = ? "; }
-
-$sql .= " ORDER BY i.updated_at DESC, i.ins_id DESC LIMIT ? OFFSET ?";
+$finalParams = $params;
+$finalParams[] = $offset;
+$finalParams[] = $items_per_page;
+$finalTypes = $types . "ii";
 
 $stmt = $connpeuy->prepare($sql);
-$finalParams = $cParams;
-$finalParams[] = $items_per_page;
-$finalParams[] = $offset;
-$finalTypes   = $cTypes . 'ii';
-
+if (!$stmt) {
+    die("SQL Prepare Error: " . $connpeuy->error . "<br>Query: " . $sql);
+}
 $stmt->bind_param($finalTypes, ...$finalParams);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -127,7 +117,6 @@ $result = $stmt->get_result();
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/manual_guide.css">
   <style>
-      /* เพิ่มเติมเพื่อความสวยงามในหน้านี้ */
       .thumb-md { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; }
       .card-instrument { transition: transform 0.2s; cursor: pointer; }
       .card-instrument:active { transform: scale(0.98); }
@@ -142,7 +131,9 @@ $result = $stmt->get_result();
       <h1 class="h3 mb-0 fw-bold">
         <a href="/xct/alt/extension?act=automate" class="bi bi-list-stars me-2 text-primary" title="คู่มือเดิม"></a>
           คู่มือเครื่องตรวจ</h1>
+        
     </div>
+    
 
     <form class="card card-body mb-4 shadow-sm border-0" method="get" action="">
         <input type="hidden" name="act" value="manual_guide">
@@ -170,7 +161,24 @@ $result = $stmt->get_result();
         </div>
     </form>
 
-    <div class="card shadow-sm border-0 mb-4 overflow-hidden d-none d-md-block">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="text-muted small">พบทั้งหมด <?= $total_items ?> รายการ</div>
+        <div class="btn-group shadow-sm" role="group">
+            <a href="?act=manual_guide&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>&sort=desc" 
+               class="btn btn-sm <?= ($sort == 'desc') ? 'btn-dark' : 'btn-outline-dark' ?>">
+                <i class="bi bi-sort-down"></i> ใหม่ล่าสุด
+            </a>
+            <a href="?act=manual_guide&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>&sort=asc" 
+               class="btn btn-sm <?= ($sort == 'asc') ? 'btn-dark' : 'btn-outline-dark' ?>">
+                <i class="bi bi-sort-up"></i> เก่าสุด
+            </a>
+        </div>
+    </div>
+
+    
+
+   <div class="card shadow-sm border-0 mb-4 overflow-hidden d-none d-md-block">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
@@ -287,10 +295,7 @@ $result = $stmt->get_result();
                                     </div>
                                 </div>
 
-                                <!-- <div class="small text-muted mb-1">ID: #<?= $row['ins_id'] ?></div>
-                                <div class="badge bg-light text-secondary border rounded-pill mb-2" style="font-size: 0.65rem;">
-                                    <?= htmlspecialchars($row['category_name']) ?>
-                                </div> -->
+                                
 
                                 <div class="d-flex flex-wrap gap-1 mb-2">
                                     <td>
