@@ -34,7 +34,11 @@ switch ($act) {
         break;
 
     case 'old':
-        require __DIR__ . '/xct/alt/extension?act=automate';
+        require __DIR__ . '/oop/info.php';
+        break;
+
+    case 'train':
+        require __DIR__ . '/oop/train_from.php';
         break;
 
     default:

@@ -1,13 +1,18 @@
 <?php
 /* db/save_instrument.php */
+session_start();
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../config/paths.php';
 
 $conn = db();
 $conn->set_charset('utf8mb4');
 
+// กำหนดขนาดไฟล์สูงสุด (Bytes)
+$MAX_IMG_SIZE = 8 * 1024 * 1024;  // 5MB สำหรับรูปภาพ
+$MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB สำหรับไฟล์เอกสาร ZIP/RAR
+
 /**
- * 1. ส่วนจัดการการลบไฟล์ (Delete Action)
+ * 1. ส่วนจัดการการลบไฟล์ (Delete Actions)
  */
 if (isset($_REQUEST['act'])) {
     $act = $_REQUEST['act'];
@@ -39,7 +44,6 @@ if (isset($_REQUEST['act'])) {
         $stmt->execute();
         $file = $stmt->get_result()->fetch_assoc();
         if ($file) {
-            // ⭐ ใช้ IMG_PATH ให้ตรงกับที่เก็บรูป Setup/Run
             $fullPath = IMG_PATH . $file['file_name'];
             if (file_exists($fullPath)) unlink($fullPath);
             $conn->query("DELETE FROM $table WHERE $pk = $id");
@@ -52,93 +56,123 @@ if (isset($_REQUEST['act'])) {
  * 2. ส่วนการประมวลผลข้อมูลผ่าน POST
  */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $ins_id_input = (int)($_POST['ins_id'] ?? 0);
-    $ins_id = $ins_id_input; 
-    $name = isset($_POST['name']) ? trim($_POST['name']) : '';
+    $ins_id = (int)($_POST['ins_id'] ?? 0);
+    $mode = $_POST['mode'] ?? 'basic'; 
 
-    $has_eq_img = !empty($_FILES['equipment_image']['name']);
-    $has_setup  = !empty($_FILES['setup_images']['name'][0]);
-    $has_run    = !empty($_FILES['run_images']['name'][0]);
-    $has_file   = !empty($_FILES['determinations']['name'][0]);
-
-    /**
-     * 3. จัดการรูปหน้าปกเครื่อง (Equipment Image)
-     */
-    $eq_img_name = null;
-    if ($has_eq_img) {
-        $file = $_FILES['equipment_image'];
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $eq_img_name = 'eq_' . uniqid() . '.' . $ext;
-        
-        // ⭐ กำหนดที่เก็บรูปหน้าปกแยกจากรูป Setup
-        if (!is_dir(IMG_PATH)) mkdir(IMG_PATH, 0755, true);
-        move_uploaded_file($file['tmp_name'], IMG_PATH . $eq_img_name);
+    // ดึงชื่อ-นามสกุลจาก Session เพื่อบันทึกผู้แก้ไข (updated_by)
+    $fname = $_SESSION['user_firstname'] ?? $_SESSION['User_Firstname'] ?? '';
+    $lname = $_SESSION['user_lastname'] ?? $_SESSION['User_Lastname'] ?? '';
+    $full_name = trim($fname . " " . $lname);
+    
+    // หากไม่มีข้อมูลชื่อใน Session ให้บันทึกเป็น System
+    if (empty($full_name)) { 
+        $full_name = "System"; 
     }
 
+    // เตรียม SQL Update หลักสำหรับตาราง instruments
+    $updates = ["updated_at = NOW()", "updated_by = ?","live_event = NOW()"];
+    $params = [$full_name];
+    $types = "s";
+
+    // เตรียมชื่อไฟล์พื้นฐานสำหรับการอัปโหลด
+    $name = isset($_POST['name']) ? trim($_POST['name']) : '';
+    if ($name == '') {
+        $res_n = $conn->query("SELECT atm_model_name FROM automate_model WHERE atm_model_id = $ins_id");
+        $row_n = $res_n->fetch_assoc();
+        $name = $row_n['atm_model_name'] ?? 'inst';
+    }
+    $safe_name = preg_replace('/[^A-Za-z0-9]/', '', $name) ?: 'inst';
+    $random_num = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+    $base_name = $safe_name . '_' . $random_num . '_' . date('Ymd');
+
     /**
-     * 4. บันทึกข้อมูลหลัก
+     * 3. แยกการทำงานตามโหมด
      */
-    if ($name !== '' || $eq_img_name !== null) {
-        if ($ins_id > 0) {
-            $updates = ["update_at=NOW()"];
-            $params = []; $types = "";
+    if ($mode === 'basic') {
+        // --- โหมดแก้ไขข้อมูลพื้นฐาน ---
+        $status_manual_id = (int)($_POST['status_manual_id'] ?? 1);
+        $cable_type_id = (int)($_POST['cable_type_id'] ?? 0);
+        $config_text = $_POST['config_text'] ?? '';
 
-            if ($name !== '') {
-                array_push($updates, "name=?", "category_id=?", "cable_type_id=?", "config_text=?");
-                array_push($params, $name, $_POST['category_id'], $_POST['cable_type_id'], $_POST['config_text']);
-                $types .= "siis";
-            }
-            if ($eq_img_name) {
-                $updates[] = "equipment_image=?";
-                $params[] = $eq_img_name; $types .= "s";
-            }
+        array_push($updates, "cable_type_id = ?", "config_text = ?");
+        array_push($params, $cable_type_id, $config_text);
+        $types .= "is";
 
-            $sql = "UPDATE instruments SET " . implode(', ', $updates) . " WHERE ins_id=?";
-            $params[] = $ins_id; $types .= "i";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param($types, ...$params);
-            $stmt->execute();
-        } else {
-            $stmt = $conn->prepare("INSERT INTO instruments (name, category_id, cable_type_id, config_text, equipment_image, created_at, update_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
-            $stmt->bind_param("siiss", $name, $_POST['category_id'], $_POST['cable_type_id'], $_POST['config_text'], $eq_img_name);
-            $stmt->execute();
-            $ins_id = $conn->insert_id;
+        // ⭐ บันทึกทั้งสถานะ และชื่อผู้แก้ไขลงในตาราง automate_model
+        $stmt_status = $conn->prepare("UPDATE automate_model SET ref_atm_status_manual_id = ?, atm_model_updatedBy = ? WHERE atm_model_id = ?");
+        $stmt_status->bind_param("isi", $status_manual_id, $full_name, $ins_id);
+        $stmt_status->execute();
+
+    } else if ($mode === 'upload') {
+    // ตรวจสอบไฟล์หน้าปก (Equipment Image)
+    if (isset($_FILES['equipment_image']) && $_FILES['equipment_image']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['equipment_image'];
+        
+        // เช็คขนาดไฟล์ (MAX_IMG_SIZE = 5MB)
+        if ($file['size'] > $MAX_IMG_SIZE) {
+            header("Location: " . BASE_URL . "?act=edit&id=$ins_id&mode=$mode&status=error_size");
+            exit();
+        }
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        // แนะนำให้เพิ่ม uniqid() เพื่อไม่ให้ชื่อไฟล์ซ้ำกันจน Browser ไม่อัปเดตรูปหน้าเว็บ
+        $eq_img_name = $base_name . '_main_' . substr(uniqid(), -5) . '.' . $ext;
+
+        if (!is_dir(IMG_PATH)) mkdir(IMG_PATH, 0755, true);
+
+        if (move_uploaded_file($file['tmp_name'], IMG_PATH . $eq_img_name)) {
+            // สำคัญ: เพิ่มเข้าไปในรายการ Update ของตาราง instruments
+            $updates[] = "equipment_image = ?";
+            $params[] = $eq_img_name; 
+            $types .= "s";
         }
     }
 
-    /**
-     * 5. อัปโหลดรูปหลายไฟล์ (Setup / Run / Files)
-     */
-    if ($ins_id > 0) {
-        if ($has_setup) uploadMultipleFiles($_FILES['setup_images'], IMG_PATH, $conn, $ins_id, 'instrument_setup_images');
-        if ($has_run)   uploadMultipleFiles($_FILES['run_images'], IMG_PATH, $conn, $ins_id, 'instrument_run_images');
-        if ($has_file)  uploadMultipleFiles($_FILES['determinations'], FILE_PATH, $conn, $ins_id, 'instrument_determination');
+        if (!empty($_FILES['setup_images']['name'][0])) {
+            uploadCustomFiles($_FILES['setup_images'], IMG_PATH, $conn, $ins_id, 'instrument_setup_images', $base_name . '_002', $MAX_IMG_SIZE, BASE_URL, $mode);
+        }
+        if (!empty($_FILES['run_images']['name'][0])) {
+            uploadCustomFiles($_FILES['run_images'], IMG_PATH, $conn, $ins_id, 'instrument_run_images', $base_name . '_003', $MAX_IMG_SIZE, BASE_URL, $mode);
+        }
+    }
+
+    // อัปโหลดไฟล์เอกสาร (บันทึกได้จากทุกโหมด)
+    if (!empty($_FILES['determinations']['name'][0])) {
+        uploadCustomFiles($_FILES['determinations'], FILE_PATH, $conn, $ins_id, 'instrument_determination', $base_name . '_004', $MAX_FILE_SIZE, BASE_URL, $mode);
     }
 
     /**
-     * 6. ระบบ Redirect
+     * 4. ประมวลผลการบันทึกลงตาราง instruments
      */
-    if ($ins_id_input === 0) {
-        header("Location: " . BASE_URL . "?act=manual_guide&status=success");
-    } else {
-        $mode = ($has_setup || $has_run) ? 'upload' : 'basic';
-        header("Location: " . BASE_URL . "?act=edit&id=$ins_id&mode=$mode&status=success");
+    if ($ins_id > 0) {
+        $sql = "UPDATE instruments SET " . implode(', ', $updates) . " WHERE ins_id = ?";
+        $params[] = $ins_id;
+        $types .= "i";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
     }
+
+    header("Location: " . BASE_URL . "?act=edit&id=$ins_id&mode=$mode&status=success");
     exit();
 }
 
 /**
- * 7. ฟังก์ชันตัวช่วยอัปโหลดไฟล์
+ * 5. ฟังก์ชันช่วยจัดการการอัปโหลดไฟล์
  */
-function uploadMultipleFiles($fileInput, $targetPath, $conn, $insId, $tableName) {
+function uploadCustomFiles($fileInput, $targetPath, $conn, $insId, $tableName, $filePrefix, $maxSize, $baseUrl, $mode) {
     if (empty($fileInput['name'][0])) return;
     if (!is_dir($targetPath)) mkdir($targetPath, 0755, true);
 
     foreach ($fileInput['name'] as $key => $val) {
         if ($fileInput['error'][$key] === UPLOAD_ERR_OK) {
+            if ($fileInput['size'][$key] > $maxSize) {
+                header("Location: " . $baseUrl . "?act=edit&id=$insId&mode=$mode&status=error_size");
+                exit();
+            }
             $ext = strtolower(pathinfo($val, PATHINFO_EXTENSION));
-            $newFileName = uniqid('img_', true) . '.' . $ext;
-
+            $newFileName = $filePrefix . '_' . substr(uniqid(), -5) . '.' . $ext;
             if (move_uploaded_file($fileInput['tmp_name'][$key], $targetPath . $newFileName)) {
                 if ($tableName === 'instrument_determination') {
                     $st = $conn->prepare("INSERT INTO $tableName (instrument_id, file_name, original_name) VALUES (?, ?, ?)");

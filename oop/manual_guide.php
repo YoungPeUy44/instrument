@@ -1,7 +1,6 @@
 <?php
 session_start();
 $ins_id = (int)($_GET['id'] ?? 0);
-// var_dump($_SESSION);
 
 // if (!isset($_SESSION['user_instrument']) || $_SESSION['user_instrument'] != "1") { 
 //     echo "
@@ -28,6 +27,7 @@ require_once __DIR__ . '/../config/paths.php';
 require_once __DIR__ . '/../db/db.php';
 require_once __DIR__ . '/../config/auth.php';
 require_once __DIR__ . '/../config/helpers.php';
+// require_once __DIR__ . '/../config/check_permission.php';
 
 $connpeuy = db();
 $connpeuy->set_charset('utf8mb4');
@@ -89,7 +89,9 @@ $sql = "SELECT i.*,
         INNER JOIN automate_category c ON m.ref_atm_category_id = c.atm_category_id
         LEFT JOIN instrument_cable_types t ON t.cable_id = i.cable_type_id
         WHERE $where_sql
-        ORDER BY i.updated_at $sort_order 
+        ORDER BY 
+            (i.updated_at IS NULL) ASC, -- NULL อยู่ล่างสุด
+            i.updated_at $sort_order
         LIMIT ?, ?";
 
 $finalParams = $params;
@@ -111,7 +113,7 @@ $result = $stmt->get_result();
 <head>
   <meta charset="utf-8">
   <title>Automate Guide</title>
-  <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>assets/imgs/logo/favicon.ico">
+  <?php require_once __DIR__ . '/../config/favicon.php'; ?>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -129,9 +131,12 @@ $result = $stmt->get_result();
         <i class="bi bi-house-door-fill"></i>
       </a>
       <h1 class="h3 mb-0 fw-bold">
-        <a href="/xct/alt/extension?act=automate" class="bi bi-list-stars me-2 text-primary" title="คู่มือเดิม"></a>
+        <!-- <a href="/xct/alt/instrument?act=old" class="bi bi-list-stars me-2 text-primary" title="คู่มือเดิม"></a> -->
           คู่มือเครื่องตรวจ</h1>
         
+          <a href="?act=train" class="col-4 col-md-3 btn btn-warning shadow-sm fw-bold">
+                <i class="bi bi-calendar-plus me-1"></i> นัดหมายการเทรน
+          </a>
     </div>
     
 
@@ -198,9 +203,10 @@ $result = $stmt->get_result();
               <?php while($row = $result->fetch_assoc()): ?>
                 <tr onclick="window.location='?act=view&id=<?= $row['ins_id'] ?>';">
                   <td style="width:140px;">
-                        <div class="table-thumb-box shadow-sm border">
-                            <img src="<?= img_src($row['equipment_image']) ?>"
-                                onerror="this.src='https://placehold.co/150x150?text=No+Image'">
+                        <div class="table-thumb-box shadow-sm border bg-white">
+                            <img src="<?= img_src($row['equipment_image']) ?>" 
+                            onerror="this.src='<?= BASE_URL ?>assets/imgs/ins_setup/noImage.jpg'">
+                                
                         </div>
                     </td>
                   <td>
@@ -230,10 +236,13 @@ $result = $stmt->get_result();
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
                             <li><a class="dropdown-item" href="?act=view&id=<?= $row['ins_id'] ?>"><i class="bi bi-eye text-primary me-2"></i>ดูรายละเอียด</a></li>
+                            <!-- สิทธิ์การใช้งานหน้าเว็บ -->
+                            
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic"><i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูล</a></li>
                             <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=upload"><i class="bi bi-images text-success me-2"></i>อัปโหลดภาพ</a></li>
                             <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=sort"><i class="bi bi-arrow-down-up text-info me-2"></i>ลบเเละจัดลำดับภาพ</a></li>
+                            
                         </ul>
                     </div>
                   </td>
@@ -258,7 +267,7 @@ $result = $stmt->get_result();
                             <img src="<?= img_src($row['equipment_image']) ?>" 
                                  class="img-fluid h-100 w-100" 
                                  style="object-fit: cover; min-height: 110px;" 
-                                 onerror="this.src='https://placehold.co/150x150?text=No+Img'">
+                                 onerror="this.src='<?= BASE_URL ?>assets/imgs/ins_setup/noImage.jpg'">
                         </div>
 
                         <div class="col-8">
@@ -274,7 +283,7 @@ $result = $stmt->get_result();
                                         data-bs-toggle="dropdown" 
                                         data-bs-display="static" 
                                         aria-expanded="false"></i>
-                                        
+                                        <?php if ($can_edit): ?>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
                                             <li>
                                                 <a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic">
@@ -292,6 +301,7 @@ $result = $stmt->get_result();
                                                 </a>
                                             </li>
                                         </ul>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
 
@@ -374,3 +384,4 @@ $result = $stmt->get_result();
 </footer>
 </body>
 </html>
+

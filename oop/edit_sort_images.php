@@ -126,7 +126,7 @@ $run_res   = $db->query("SELECT * FROM instrument_run_images WHERE instrument_id
             <?php $i=1; while($s = $setup_res->fetch_assoc()): ?>
                 <div class="sortable-item shadow-sm" data-id="<?= $s['setup_id'] ?>">
                     <div class="drag-handle"><i class="bi bi-grip-vertical"></i></div>
-                    <img src="<?= img_src($s['file_name']) ?>" class="sortable-img" onerror="this.src='assets/imgs/no-image.png'">
+                    <img src="<?= img_src($s['file_name']) ?>" class="sortable-img" onerror="this.src='<?= BASE_URL ?>assets/imgs/ins_setup/noImage.jpg'">
                     <div class="sortable-info">รูปที่ <?= $i++ ?> <small class="text-muted ms-2">(<?= htmlspecialchars($s['file_name']) ?>)</small></div>
                     <button type="button" class="btn-delete-item" onclick="deleteImgPOST('setup', '<?= $s['setup_id'] ?>', '<?= $ins_id ?>', '<?= BASE_URL ?>')">
                         <i class="bi bi-trash"></i>
@@ -149,7 +149,7 @@ $run_res   = $db->query("SELECT * FROM instrument_run_images WHERE instrument_id
             <?php $j=1; while($r = $run_res->fetch_assoc()): ?>
                 <div class="sortable-item shadow-sm" data-id="<?= $r['run_id'] ?>">
                     <div class="drag-handle"><i class="bi bi-grip-vertical"></i></div>
-                    <img src="<?= img_src($r['file_name']) ?>" class="sortable-img" onerror="this.src='assets/imgs/no-image.png'">
+                    <img src="<?= img_src($r['file_name']) ?>" class="sortable-img" onerror="this.src='<?= BASE_URL ?>assets/imgs/ins_setup/noImage.jpg'">
                     <div class="sortable-info">รูปที่ <?= $j++ ?> <small class="text-muted ms-2">(<?= htmlspecialchars($r['file_name']) ?>)</small></div>
                     <button type="button" class="btn-delete-item" onclick="deleteImgPOST('run', '<?= $r['run_id'] ?>', '<?= $ins_id ?>', '<?= BASE_URL ?>')">
                         <i class="bi bi-trash"></i>

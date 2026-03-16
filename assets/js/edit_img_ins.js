@@ -4,7 +4,7 @@
  */
 
 // กำหนดค่าคงที่ (ให้ตรงกับใน save_instrument.php)
-const MAX_IMG_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMG_SIZE = 50 * 1024 * 1024; // 8MB
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -72,7 +72,7 @@ function showSizeError(currentSize) {
     Swal.fire({
         icon: 'error',
         title: 'ไฟล์ใหญ่เกินไป!',
-        text: `ขนาดไฟล์ของคุณ ${sizeMB} MB ซึ่งเกินขีดจำกัดที่ 5 MB กรุณาย่อขนาดรูปภาพก่อนอัปโหลด`,
+        text: `ขนาดไฟล์ของคุณ ${sizeMB} MB ซึ่งเกินขีดจำกัดที่ 8 MB กรุณาย่อขนาดรูปภาพก่อนอัปโหลด`,
         confirmButtonColor: '#28a745'
     });
 }

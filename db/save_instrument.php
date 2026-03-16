@@ -3,13 +3,22 @@
 session_start();
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../config/paths.php';
-
+$MAX_IMG_SIZE = 50 * 1024 * 1024;  // 5MB สำหรับรูปภาพ
+$MAX_FILE_SIZE = 10 * 1024 * 1024; // 20MB สำหรับไฟล์เอกสาร ZIP/RAR
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && isset($_SERVER['CONTENT_LENGTH'])) {
+    $size_bytes = $_SERVER['CONTENT_LENGTH'];
+    $size_mb = round($size_bytes / (1024 * 1024), 2); // แปลงเป็น MB
+    
+    $referrer = $_SERVER['HTTP_REFERER'] ?? '../index.php';
+    // ส่งค่า size กลับไปด้วย
+    header("Location: " . $referrer . "&status=error_too_big&size=" . $size_mb);
+    exit;
+}
 $conn = db();
 $conn->set_charset('utf8mb4');
 
 // กำหนดขนาดไฟล์สูงสุด (Bytes)
-$MAX_IMG_SIZE = 6 * 1024 * 1024;  // 5MB สำหรับรูปภาพ
-$MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB สำหรับไฟล์เอกสาร ZIP/RAR
+
 
 /**
  * 1. ส่วนจัดการการลบไฟล์ (Delete Actions)
@@ -70,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // เตรียม SQL Update หลักสำหรับตาราง instruments
-    $updates = ["updated_at = NOW()", "updated_by = ?"];
+    $updates = ["updated_at = NOW()", "updated_by = ?","live_event = NOW()"];
     $params = [$full_name];
     $types = "s";
 

@@ -25,7 +25,7 @@
     </div>
 
     <div class="card-body p-3"> 
-        <form action="<?= BASE_URL ?>db/save_instrument.php" method="post" enctype="multipart/form-data" id="formBasic">
+        
             <!-- ⭐ เพิ่มโหมดเพื่อป้องกันข้อมูลหาย -->
             <input type="hidden" name="mode" value="basic">
             <input type="hidden" name="ins_id" value="<?= $ins_id ?>">
@@ -90,21 +90,29 @@
 
             <div class="p-2 bg-primary bg-opacity-10 rounded mb-3 border border-primary border-opacity-25">
                 <label class="form-label fw-bold small text-primary mb-1">เพิ่มไฟล์ใหม่ (.zip, .rar):</label>
-                <input type="file" name="determinations[]" class="form-control form-control-sm" accept=".zip, .rar" multiple>
+                <input type="file" name="determinations[]" class="form-control form-control-sm" accept=".zip, .rar, .pdf" multiple>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
-                <i class="bi bi-save me-2"></i>บันทึกข้อมูลพื้นฐาน
-            </button>
-        </form>
+            
+        
     </div>
 </div>
 
 <script>
 // จัดการการเปลี่ยนสถานะจากปุ่ม Radio
-document.querySelectorAll('input[name="status_selector"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        document.getElementById('status_manual_id').value = this.value;
+// document.querySelectorAll('input[name="status_selector"]').forEach(radio => {
+//     radio.addEventListener('change', function() {
+//         document.getElementById('status_manual_id').value = this.value;
+//     });
+// });
+const MAX_IMG_SIZE = 8 * 1024 * 1024; // 8MB
+function showSizeError(currentSize) {
+    const sizeMB = (currentSize / (1024 * 1024)).toFixed(2);
+    Swal.fire({
+        icon: 'error',
+        title: 'ไฟล์ใหญ่เกินไป!',
+        text: `ขนาดไฟล์ของคุณ ${sizeMB} MB ซึ่งเกินขีดจำกัดที่ 8 MB กรุณาย่อขนาดรูปภาพก่อนอัปโหลด`,
+        confirmButtonColor: '#28a745'
     });
-});
+}
 </script>

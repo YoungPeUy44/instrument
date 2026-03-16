@@ -12,6 +12,7 @@ if (fileInput) {
   });
 }
 
+
 // -------- ขยาย textarea อัตโนมัติขณะพิมพ์ (ไม่กระทบบันทึก) --------
 function autoGrow(el) {
   el.style.height = 'auto';
