@@ -1,0 +1,63 @@
+/* training/assets/css/train_form.css */
+
+body {
+    background-color: #f8f9fa !important;
+}
+
+/* Card Styling */
+.card {
+    transition: all 0.3s ease;
+}
+
+/* Instrument Item Styling */
+.btn-instrument-item {
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #dee2e6 !important;
+}
+
+.btn-instrument-item:hover {
+    background-color: #fff9e6;
+    border-color: #ffc107 !important;
+}
+
+/* เมื่อ Checkbox ถูกเลือก */
+.btn-instrument-item:has(.ins-checkbox:checked) {
+    background-color: #fff9e6;
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 0 1px #ffc107;
+}
+
+/* Checkbox ขนาดใหญ่ */
+.ins-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.ins-checkbox:checked {
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+/* Custom Scrollbar สำหรับรายการเครื่อง */
+.instrument-list::-webkit-scrollbar {
+    width: 6px;
+}
+.instrument-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.instrument-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+.instrument-list::-webkit-scrollbar-thumb:hover {
+    background: #ffc107;
+}
+
+/* Form Control Focus */
+.form-control:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.15);
+}

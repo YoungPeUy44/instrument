@@ -15,11 +15,19 @@
                     <i class="bi bi-check-circle me-1"></i>พร้อม
                 </label>
 
+                <input type="radio" class="btn-check" name="status_selector" id="status_training" value="3" 
+                    <?= ($item['ref_atm_status_manual_id'] == 3) ? 'checked' : '' ?> autocomplete="off">
+                <label class="btn btn-outline-warning btn-sm px-3 py-1 fw-bold text-dark" for="status_training">
+                    <i class="bi bi-hourglass-split me-1"></i>รอเทรน
+                </label>
+
                 <input type="radio" class="btn-check" name="status_selector" id="status_not_ready" value="2" 
                     <?= ($item['ref_atm_status_manual_id'] == 2) ? 'checked' : '' ?> autocomplete="off">
                 <label class="btn btn-outline-danger btn-sm px-3 py-1 fw-bold" for="status_not_ready">
                     <i class="bi bi-x-circle me-1"></i>ไม่พร้อม
                 </label>
+
+                
             </div>
         </div>
     </div>
@@ -29,7 +37,7 @@
             <!-- ⭐ เพิ่มโหมดเพื่อป้องกันข้อมูลหาย -->
             <input type="hidden" name="mode" value="basic">
             <input type="hidden" name="ins_id" value="<?= $ins_id ?>">
-            <input type="hidden" name="status_manual_id" id="status_manual_id" value="<?= $item['ref_atm_status_manual_id'] ?>">
+            <!-- <input type="hidden" name="status_manual_id" id="status_manual_id" value="<?= $item['ref_atm_status_manual_id'] ?>"> -->
 
             <div class="mb-3">
                 <label class="form-label fw-bold small mb-1">ชื่อเครื่องตรวจ</label>
@@ -99,20 +107,10 @@
 </div>
 
 <script>
-// จัดการการเปลี่ยนสถานะจากปุ่ม Radio
-// document.querySelectorAll('input[name="status_selector"]').forEach(radio => {
-//     radio.addEventListener('change', function() {
-//         document.getElementById('status_manual_id').value = this.value;
-//     });
-// });
-const MAX_IMG_SIZE = 8 * 1024 * 1024; // 8MB
-function showSizeError(currentSize) {
-    const sizeMB = (currentSize / (1024 * 1024)).toFixed(2);
-    Swal.fire({
-        icon: 'error',
-        title: 'ไฟล์ใหญ่เกินไป!',
-        text: `ขนาดไฟล์ของคุณ ${sizeMB} MB ซึ่งเกินขีดจำกัดที่ 8 MB กรุณาย่อขนาดรูปภาพก่อนอัปโหลด`,
-        confirmButtonColor: '#28a745'
+จัดการการเปลี่ยนสถานะจากปุ่ม Radio
+document.querySelectorAll('input[name="status_selector"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.getElementById('status_manual_id').value = this.value;
     });
-}
+});
 </script>

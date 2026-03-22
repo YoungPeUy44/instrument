@@ -38,7 +38,7 @@ switch ($act) {
         break;
 
     case 'train':
-        require __DIR__ . '/oop/train_from.php';
+        require __DIR__ . '/training/oop/train_form.php';
         break;
 
     default:

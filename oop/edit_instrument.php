@@ -97,6 +97,32 @@ if ($ins_id > 0 && !$item) {
 document.addEventListener('DOMContentLoaded', function() {
     // แสดง Error จากไฟล์ใหญ่ (ถ้ามี)
     <?= $error_script ?>
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('status') === 'success') {
+        Swal.fire({
+            icon: 'success',
+            title: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+            showConfirmButton: false,
+            timer: 1500,
+            toast: true,
+            position: 'top-end' // แสดงเป็น Toast มุมขวาบนเพื่อให้ไม่บังหน้าจอ
+        }).then(() => {
+            // ล้าง status ออกจาก URL เพื่อป้องกัน Popup เด้งซ้ำตอน Refresh
+            let url = new URL(window.location.href);
+            url.searchParams.delete('status');
+            window.history.replaceState({}, '', url);
+        });
+    }
+
+    // 3. [เพิ่มใหม่] แจ้งเตือนเมื่อนัดเทรนสำเร็จ
+    if (urlParams.get('status') === 'train_success') {
+        Swal.fire({
+            icon: 'success',
+            title: 'นัดหมายสำเร็จ',
+            text: 'ระบบบันทึกการนัดเทรนและเปลี่ยนสถานะเป็นรอเทรนแล้ว',
+            confirmButtonColor: '#ffc107'
+        });
+    }
 
     // ดักจับการ Submit
     const mainForm = document.getElementById('mainUploadForm');
@@ -128,6 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+
 </script>
 <script src="<?= BASE_URL ?>assets/js/sortable-logic.js?v=<?= time() ?>"></script>
 <script src="<?= BASE_URL ?>assets/js/edit_img_ins.js"></script>

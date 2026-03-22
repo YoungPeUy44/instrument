@@ -1,4 +1,12 @@
 <?php
+
+echo '<pre>';
+print_r($_POST);
+echo '<br>';
+exit();
+
+
+
 session_start();
 $ins_id = (int)($_GET['id'] ?? 0);
 
@@ -37,7 +45,6 @@ $kw          = isset($_GET['kw']) ? trim($_GET['kw']) : '';
 $category_id = isset($_GET['category_id']) ? (int)$_GET['category_id'] : 0;
 $sort        = $_GET['sort'] ?? 'desc'; 
 $sort_order  = ($sort === 'asc') ? 'ASC' : 'DESC';
-$status_id   = isset($_GET['status_id']) ? (int)$_GET['status_id'] : 0;
 
 $items_per_page = 10; 
 $current_page   = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -50,11 +57,6 @@ $catSql = "SELECT atm_category_id AS categories_id, atm_category_name AS name FR
 if ($res = $connpeuy->query($catSql)) {
     while ($row = $res->fetch_assoc()) { $cats[] = $row; }
     $res->free();
-}
-if ($status_id > 0) {
-    $where_clauses[] = "m.ref_atm_status_manual_id = ?";
-    $params[] = $status_id;
-    $types .= "i";
 }
 
 // ---------- 3) สร้าง WHERE Clause ----------
@@ -70,12 +72,6 @@ if ($kw !== '') {
 if ($category_id > 0) {
     $where_clauses[] = "m.ref_atm_category_id = ?";
     $params[] = $category_id;
-    $types .= "i";
-}
-// ⭐ ย้ายมาอยู่ในชุดเดียวกัน
-if ($status_id > 0) {
-    $where_clauses[] = "m.ref_atm_status_manual_id = ?";
-    $params[] = $status_id;
     $types .= "i";
 }
 $where_sql = implode(" AND ", $where_clauses);
@@ -143,46 +139,39 @@ $result = $stmt->get_result();
         <i class="bi bi-house-door-fill"></i>
       </a>
       <h1 class="h3 mb-0 fw-bold">
-        <a href="?act=train" class="bi bi-list-stars me-2 text-primary" title="คู่มือเดิม"></a>
+        <a href="?act=train" class="bi bi-calendar-plus me-1" title="นัดหมายการเทรน"></a>
           คู่มือเครื่องตรวจ</h1>
         
+          <!-- <a href="?act=train" class="col-4 col-md-3 btn btn-warning shadow-sm fw-bold">
+                <i class="bi bi-calendar-plus me-1"></i> นัดหมายการเทรน
+            </a> -->
     </div>
     
 
     <form class="card card-body mb-4 shadow-sm border-0" method="get" action="">
-    <input type="hidden" name="act" value="manual_guide">
-    <div class="row g-2">
-        <div class="col-12 col-md-5">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" name="kw" class="form-control border-start-0" 
-                       placeholder="ค้นหาชื่อเครื่องตรวจ..." value="<?= htmlspecialchars($kw) ?>">
+        <input type="hidden" name="act" value="manual_guide">
+        <div class="row g-2">
+            <div class="col-12 col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="kw" class="form-control border-start-0" 
+                           placeholder="ค้นหาชื่อเครื่องตรวจ..." value="<?= htmlspecialchars($kw) ?>">
+                </div>
+            </div>
+            <div class="col-8 col-md-4">
+                <select name="category_id" class="form-select">
+                    <option value="0">ทุกหมวดหมู่</option>
+                    <?php foreach ($cats as $c): ?>
+                        <option value="<?= $c['categories_id'] ?>" <?= ($category_id == $c['categories_id']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($c['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-4 col-md-3">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i></button>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <select name="category_id" class="form-select">
-                <option value="0">ทุกหมวดหมู่</option>
-                <?php foreach ($cats as $c): ?>
-                    <option value="<?= $c['categories_id'] ?>" <?= ($category_id == $c['categories_id']) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($c['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-6 col-md-2">
-            <select name="status_id" class="form-select">
-                <option value="0">ทุกสถานะ</option>
-                <option value="1" <?= ($status_id == 1) ? 'selected' : '' ?>>พร้อม</option>
-                <option value="3" <?= ($status_id == 3) ? 'selected' : '' ?>>รอเทรน</option>
-                <option value="2" <?= ($status_id == 2) ? 'selected' : '' ?>>ไม่พร้อม</option>
-            </select>
-        </div>
-        <div class="col-12 col-md-2">
-            <button type="submit" class="btn btn-primary w-100 fw-bold">
-                <i class="bi bi-funnel-fill me-1"></i> กรอง
-            </button>
-        </div>
-    </div>
     </form>
 
 
@@ -232,22 +221,11 @@ $result = $stmt->get_result();
                     <div class="fw-bold text-dark mb-0"><?= htmlspecialchars($row['name']) ?></div>
                     <div class="small text-muted">ID: #<?= (int)$row['ins_id'] ?></div>
                   </td>
-                  <!-- สถานะคู่มือ -->
                   <td class="text-center">
-                    <?php
-                        $s_id = $row['ref_atm_status_manual_id'];
-                        if ($s_id == 1): ?>
-                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
-                        <i class="bi bi-check-circle-fill me-1"></i>พร้อม
-                        </span>
-                        <?php elseif ($s_id == 3): ?>
-                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill text-dark">
-                        <i class="bi bi-clock-history me-1"></i>รอเทรน
-                        </span>
-                        <?php else: ?>
-                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">
-                        <i class="bi bi-dash-circle me-1"></i>ไม่พร้อม
-                        </span>
+                    <?php if ($row['ref_atm_status_manual_id'] == 1): ?>
+                        <i class="bi bi-check-circle-fill text-success fs-4" title="พร้อมใช้งาน"></i>
+                    <?php else: ?>
+                        <i class="bi bi-check-circle-fill text-secondary opacity-25 fs-4" title="ไม่พร้อมใช้งาน"></i>
                     <?php endif; ?>
                   </td>
                   <td>
@@ -285,64 +263,79 @@ $result = $stmt->get_result();
     </div>
 <!-- มือถือ -->
    <div class="d-md-none">
-    <?php if ($result->num_rows === 0): ?>
-        <div class="text-center p-5 text-muted">ไม่พบข้อมูลเครื่องตรวจ</div>
-    <?php else: ?>
-        <?php $result->data_seek(0); while($row = $result->fetch_assoc()): ?>
-            <div class="card card-instrument mb-3 shadow-sm border-0 overflow-hidden" onclick="window.location='?act=view&id=<?= $row['ins_id'] ?>';">
-                <div class="row g-0">
-                    <div class="col-4">
-                        <img src="<?= img_src($row['equipment_image']) ?>" 
-                             class="img-fluid h-100 w-100" 
-                             style="object-fit: cover; min-height: 120px;" 
-                             onerror="this.src='<?= BASE_URL ?>assets/imgs/ins_setup/noImage.jpg'">
-                    </div>
+        <?php if ($result->num_rows === 0): ?>
+            <div class="text-center p-5 text-muted">ไม่พบข้อมูลเครื่องตรวจ</div>
+        <?php else: ?>
+            <?php $result->data_seek(0); while($row = $result->fetch_assoc()): ?>
+                <div class="card card-instrument mb-3 shadow-sm border-0" 
+                     style="position: relative;">
+                    
+                    <div class="row g-0">
+                        <div class="col-4">
+                            <img src="<?= img_src($row['equipment_image']) ?>" 
+                                 class="img-fluid h-100 w-100" 
+                                 style="object-fit: cover; min-height: 110px;" 
+                                 onerror="this.src='<?= BASE_URL ?>assets/imgs/ins_setup/noImage.jpg'">
+                        </div>
 
-                    <div class="col-8">
-                        <div class="card-body p-2 px-3">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <div class="text-truncate" style="max-width: 85%;">
-                                    <h6 class="fw-bold mb-0 text-dark text-truncate"><?= htmlspecialchars($row['name']) ?></h6>
+                        <div class="col-8">
+                            <div class="card-body p-2 px-3">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div class="d-flex align-items-center flex-wrap gap-2" style="max-width: 82%;">
+                                        <h6 class="fw-bold mb-0 text-dark text-truncate"><?= htmlspecialchars($row['name']) ?></h6>
+                                        <i class="bi bi-check-circle-fill <?= ($row['ref_atm_status_manual_id'] == 1) ? 'text-success' : 'text-secondary opacity-25' ?>" style="font-size: 0.9rem;"></i>
+                                    </div>
+
+                                    <div class="dropdown" onclick="event.stopPropagation();">
+                                        <i class="bi bi-three-dots-vertical text-muted fs-4" 
+                                        data-bs-toggle="dropdown" 
+                                        data-bs-display="static" 
+                                        aria-expanded="false"></i>
+                                        <?php if ($can_edit): ?>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
+                                            <li>
+                                                <a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic">
+                                                    <i class="bi bi-pencil-square me-2 text-warning"></i>แก้ไขข้อมูล
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=upload">
+                                                    <i class="bi bi-images me-2 text-success"></i>อัปโหลดภาพ
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=sort">
+                                                    <i class="bi bi-sort-numeric-down  text-primary me-2 "></i>ลบและจัดลำดับภาพ
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                
+
+                                <div class="d-flex flex-wrap gap-1 mb-2">
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill mb-1"><?= htmlspecialchars($row['category_name'] ?: '—') ?></span><br>
+                                        <span class="badge badge-soft rounded-pill" style="font-size: 0.7rem;"><?= htmlspecialchars($row['cable_name'] ?: '—') ?></span>
+                                    </td>
+                                </div>
+                                
+
+                                <div class="d-flex justify-content-between align-items-end mt-1">
+                                    <small class="text-muted" style="font-size: 0.6rem;">
+                                        <i class="bi bi-clock me-1"></i><?= date('d/m/y', strtotime($row['updated_at'] ?? $row['created_at'])) ?>
+                                    </small>
+                                    <a class="text-primary fw-bold" style="font-size: 0.75rem;" href="?act=view&id=<?= $row['ins_id'] ?>">View <i class="bi bi-chevron-right"></i></a>
                                     
-                                    <?php 
-                                    $s_id = $row['ref_atm_status_manual_id'];
-                                    if ($s_id == 1): ?>
-                                        <small class="text-success"><i class="bi bi-check-circle-fill me-1"></i>พร้อม</small>
-                                    <?php elseif ($s_id == 3): ?>
-                                        <small class="text-warning"><i class="bi bi-hourglass-split me-1"></i>รอเทรน</small>
-                                    <?php else: ?>
-                                        <small class="text-secondary opacity-50"><i class="bi bi-dash-circle-fill me-1"></i>ไม่พร้อม</small>
-                                    <?php endif; ?>
                                 </div>
-
-                                <div class="dropdown" onclick="event.stopPropagation();">
-                                    <i class="bi bi-three-dots-vertical text-muted fs-4" data-bs-toggle="dropdown"></i>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
-                                        <li><a class="dropdown-item py-2" href="?act=view&id=<?= $row['ins_id'] ?>"><i class="bi bi-eye text-primary me-2"></i>ดูรายละเอียด</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic"><i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูล</a></li>
-                                        <li><a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=upload"><i class="bi bi-images text-success me-2"></i>อัปโหลดภาพ</a></li>
-                                        <li><a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=sort"><i class="bi bi-sort-numeric-down text-primary me-2"></i>จัดลำดับภาพ</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="mb-2">
-                                <span class="badge bg-secondary-subtle text-secondary rounded-pill" style="font-size: 0.65rem;"><?= htmlspecialchars($row['category_name'] ?: '—') ?></span>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-end">
-                                <small class="text-muted" style="font-size: 0.6rem;">
-                                    <i class="bi bi-clock me-1"></i><?= date('d/m/y', strtotime($row['updated_at'] ?? $row['created_at'])) ?>
-                                </small>
-                                <span class="text-primary fw-bold" style="font-size: 0.75rem;">เปิดดูคู่มือ <i class="bi bi-chevron-right"></i></span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        <?php endwhile; ?>
-    <?php endif; ?>
+            <?php endwhile; ?>
+        <?php endif; ?>
     </div>
 
     <nav class="py-3">
