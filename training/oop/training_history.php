@@ -1,5 +1,6 @@
 <?php
 /* training/oop/training_history.php */
+session_start();
 require_once __DIR__ . '/../config/paths.php';
 require_once __DIR__ . '/../db/db.php';
 // แก้ไข Path ให้ถอย 2 ชั้นไปหา config/permission.php
@@ -21,6 +22,8 @@ $sql = "SELECT
             t.created_at,
             t.created_by,
             t.training_status,
+            t.cancel_by, 
+            t.cancel_at,
             GROUP_CONCAT(m.atm_model_name SEPARATOR ', ') AS instruments,
             GROUP_CONCAT(m.atm_model_id SEPARATOR ',') AS ins_id_list 
         FROM instrument_training t
@@ -31,6 +34,7 @@ $sql = "SELECT
 
 $res = $db->query($sql);
 $user_level = isset($_SESSION['user_instrument']) ? (int)$_SESSION['user_instrument'] : 0;
+$current_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '';
 ?>
 <!doctype html>
 <html lang="th">
@@ -78,7 +82,7 @@ $user_level = isset($_SESSION['user_instrument']) ? (int)$_SESSION['user_instrum
                     <tbody>
                         <?php if ($res && $res->num_rows > 0): ?>
                             <?php while($row = $res->fetch_assoc()): ?>
-                                <tr onclick='showDetail(<?= json_encode($row, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= $user_level ?>)' style="cursor: pointer;">
+                                <tr onclick='showDetail(<?= json_encode($row, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= $user_level ?>, "<?= $current_user_id ?>")' style="cursor: pointer;">
                                     <td>
                                         <div class="fw-bold text-dark"><?= htmlspecialchars($row['training_topic']) ?></div>
                                         <div class="text-muted small">
@@ -95,10 +99,22 @@ $user_level = isset($_SESSION['user_instrument']) ? (int)$_SESSION['user_instrum
                                             <?php endforeach; ?>
                                         </div>
                                     </td>
-                                    <td><small><?= htmlspecialchars($row['training_location'] ?: '-') ?></small></td>
+                                    <td><small><i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                                <?= htmlspecialchars($row['training_location'] ?: '-') ?></small></td>
                                     <td>
-                                        <div class="small fw-bold"><?= date('d/m/Y', strtotime($row['training_start'])) ?></div>
-                                        <div class="text-muted small"><?= date('H:i', strtotime($row['training_start'])) ?> - <?= date('H:i', strtotime($row['training_end'])) ?></div>
+                                        <div>
+                                            <div class="small fw-bold mb-1">
+                                                <i class="bi bi-calendar3 me-1 text-muted"></i> 
+                                                <?= date('d/m/Y', strtotime($row['training_start'])) ?>
+                                            </div>
+                                            
+                                            <div class="small">
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    <?= date('H:i', strtotime($row['training_start'])) ?> - <?= date('H:i', strtotime($row['training_end'])) ?>
+                                                </span>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="text-center">
                                         <?php if ($row['training_status'] == 1): ?>
@@ -124,7 +140,7 @@ $user_level = isset($_SESSION['user_instrument']) ? (int)$_SESSION['user_instrum
         <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-0 p-4" style="background-color: #ffc107;">
                 <h5 class="modal-title fw-bold text-dark"><i class="bi bi-info-circle-fill me-2"></i> รายละเอียดการเทรน</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <!-- <button type="button" class="btn-close" data-bs-dismiss="modal"></button> -->
             </div>
             <div class="modal-body p-4 p-md-5" id="modalContent"></div>
             <div class="modal-footer border-0 p-4 pt-0 d-flex justify-content-between">
@@ -134,19 +150,7 @@ $user_level = isset($_SESSION['user_instrument']) ? (int)$_SESSION['user_instrum
         </div>
     </div>
 </div>
-<?php if (isset($_GET['status']) && $_GET['status'] == 'cancel_success'): ?>
-    <script>
-        window.addEventListener('load', () => {
-            Swal.fire({
-                icon: 'success',
-                title: 'ยกเลิกการเทรนสำเร็จ',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        });
-    </script>
-<?php endif; ?>
-
+<!-- Redirect -->
 <?php if (isset($_GET['status']) && $_GET['status'] == 'update_success'): ?>
     <script>
         window.addEventListener('load', () => {
@@ -154,6 +158,19 @@ $user_level = isset($_SESSION['user_instrument']) ? (int)$_SESSION['user_instrum
                 icon: 'success',
                 title: 'บันทึกข้อมูลสำเร็จ',
                 text: 'สถานะเครื่องตรวจถูกปรับเป็น "พร้อม" เรียบร้อยแล้ว',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        });
+    </script>
+<?php endif; ?>
+
+<?php if (isset($_GET['status']) && $_GET['status'] == 'train_success'): ?>
+    <script>
+        window.addEventListener('load', () => {
+            Swal.fire({
+                icon: 'success',
+                title: 'บันทึกข้อมูลสำเร็จ',
                 timer: 2000,
                 showConfirmButton: false
             });

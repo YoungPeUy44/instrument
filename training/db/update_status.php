@@ -86,8 +86,12 @@ if ($id > 0) {
     $conn->begin_transaction();
     try {
         // 1. อัปเดตสถานะการเทรนเป็น 2 (ยกเลิก)
-        $stmt_up = $conn->prepare("UPDATE instrument_training SET training_status = ? WHERE training_id = ?");
-        $stmt_up->bind_param("ii", $status, $id);
+        $stmt_up = $conn->prepare("UPDATE instrument_training SET training_status = ? , 
+                                   cancel_by = ?, 
+                                   cancel_at = NOW()
+                                   WHERE training_id = ?");
+                                //    เพิ่มชื่อผู้ยกเลิก
+        $stmt_up->bind_param("isi", $status, $cancel_by, $id);
         $stmt_up->execute();
 
         // 2. คืนค่าสถานะเครื่องตรวจเป็น 3 (ไม่พร้อม) ตามเงื่อนไขคุณ

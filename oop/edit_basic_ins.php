@@ -107,7 +107,7 @@
 </div>
 
 <script>
-จัดการการเปลี่ยนสถานะจากปุ่ม Radio
+// จัดการการเปลี่ยนสถานะจากปุ่ม Radio
 document.querySelectorAll('input[name="status_selector"]').forEach(radio => {
     radio.addEventListener('change', function() {
         document.getElementById('status_manual_id').value = this.value;

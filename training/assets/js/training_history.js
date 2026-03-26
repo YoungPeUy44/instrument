@@ -1,6 +1,6 @@
 /* training/assets/js/training_history.js */
 
-function showDetail(data, userLevel) {
+function showDetail(data, userLevel, currentUserId) {
     const modalContent = document.getElementById('modalContent');
     const cancelBtnArea = document.getElementById('cancelBtnArea');
     
@@ -15,7 +15,7 @@ function showDetail(data, userLevel) {
     if (st === 1) {
         statusHtml = '<span class="badge rounded-pill bg-success px-3 py-2 text-white">เสร็จสิ้น</span>';
     } else if (st === 2) {
-        statusHtml = '<span class="badge rounded-pill bg-secondary px-3 py-2 text-white">ยกเลิกแล้ว</span>';
+        statusHtml = '<span class="badge rounded-pill bg-secondary px-3 py-2 text-white">ยกเลิก</span>';
     } else {
         statusHtml = '<span class="badge rounded-pill bg-warning px-3 py-2 text-dark">กำลังดำเนินการ</span>';
     }
@@ -26,6 +26,7 @@ function showDetail(data, userLevel) {
                 <div class="detail-label text-muted small">หัวข้อการเทรน</div>
                 <div class="detail-value fw-bold fs-5 text-dark">${escapeHtml(data.training_topic)}</div>
             </div>
+            
             <div class="col-md-5 text-end">
                 <div class="detail-label text-muted small">สถานะ</div>
                 <div class="mt-1">${statusHtml}</div>
@@ -36,10 +37,17 @@ function showDetail(data, userLevel) {
                     ${startDate.toLocaleDateString('th-TH')} ${startDate.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})} น.
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-sm-6">
                 <div class="detail-label text-muted small">วัน-เวลาสิ้นสุด</div>
                 <div class="detail-value border p-2 rounded-3 bg-white text-dark">
                     ${endDate.toLocaleDateString('th-TH')} ${endDate.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})} น.
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="detail-label">สถานที่</div>
+                <div class="detail-value">
+                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                    ${escapeHtml(data.training_location || '-')}
                 </div>
             </div>
             <div class="col-12">
@@ -53,15 +61,22 @@ function showDetail(data, userLevel) {
                 <div class="text-dark">${escapeHtml(data.training_detail || '- ไม่มีรายละเอียด -')}</div>
             </div>
             <div class="col-12 small text-muted">
-                ผู้นัดหมาย: ${escapeHtml(data.created_by)} | วันที่บันทึก: ${createdAt.toLocaleString('th-TH')}
+                <i class="bi bi-person-fill"></i> ผู้นัดหมาย : ${escapeHtml(data.created_by)} | 
+                วันที่บันทึก: ${createdAt.toLocaleString('th-TH')}
             </div>
+            ${(st === 2 && data.cancel_by && data.cancel_by.trim() !== '') ? `
+            <div class="col-12 small text-muted mt-1">
+                <i class="bi bi-x-circle-fill"></i> ผู้ยกเลิก : ${escapeHtml(data.cancel_by)} | 
+                วันที่ยกเลิก: ${data.cancel_at ? new Date(data.cancel_at).toLocaleString('th-TH') : '-'}
+            </div>
+            ` : ''}
         </div>
     `;
 
     // 3. จัดการปุ่ม
     let buttonsHtml = '';
-
-    if (userLevel >= 3) {
+                // ซ่อนปุ่มลบ
+    if (parseInt(userLevel) >= 3 && String(currentUserId) === "3") {
         buttonsHtml += `
             <button type="button" class="btn btn-outline-danger rounded-pill px-4 me-auto" onclick="confirmDelete(${data.training_id})">
                 <i class="bi bi-trash-fill"></i> ลบประวัติ
@@ -84,11 +99,13 @@ function showDetail(data, userLevel) {
         if (userLevel >= 2) {
             buttonsHtml += `
                 <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmCancel(${data.training_id})">
-                    ยกเลิกนัด
+                    ยกเลิกนัดเทรน
                 </button>
             `;
         }
     }
+
+
 
     cancelBtnArea.innerHTML = buttonsHtml;
     new bootstrap.Modal(document.getElementById('detailModal')).show();

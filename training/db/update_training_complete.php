@@ -13,6 +13,7 @@ if ($user_level < 1) {
 $db = db();
 $db->set_charset('utf8mb4');
 
+
 // รับค่าจาก URL
 $training_id = isset($_GET['training_id']) ? (int)$_GET['training_id'] : 0;
 $ins_ids = isset($_GET['ins_ids']) ? $_GET['ins_ids'] : ''; // รับมาเป็น string "1,2,3"
@@ -23,27 +24,49 @@ if ($training_id > 0 && !empty($ins_ids)) {
     $db->begin_transaction();
 
     try {
-        // 1. อัปเดตสถานะเครื่องตรวจในตาราง automate_model ให้เป็น 'พร้อม' (ID = 1)
-        // ใช้ WHERE IN ($ins_ids) เพื่ออัปเดตหลายเครื่องใน Query เดียว
-        $sql_update_ins = "UPDATE automate_model 
-                           SET ref_atm_status_manual_id = 1 
-                           WHERE atm_model_id IN ($ins_ids)";
-        
-        if (!$db->query($sql_update_ins)) {
-            throw new Exception("ไม่สามารถอัปเดตสถานะเครื่องตรวจได้: " . $db->error);
-        }
+    // 1. เตรียมชื่อผู้แก้ไขจาก Session
+    $fname = $_SESSION['user_firstname'] ?? '';
+    $lname = $_SESSION['user_lastname'] ?? '';
+    $updated_by = trim($fname . " " . $lname) ?: 'System';
 
-        // 2. อัปเดตสถานะการนัดหมายในตาราง instrument_training ให้เป็น 'เสร็จสิ้น' (ID = 1)
-        $sql_update_train = "UPDATE instrument_training 
-                             SET training_status = 1 
-                             WHERE training_id = $training_id";
-        
-        if (!$db->query($sql_update_train)) {
-            throw new Exception("ไม่สามารถอัปเดตสถานะการเทรนได้: " . $db->error);
-        }
+    // 2. อัปเดตสถานะเครื่องตรวจ (ใช้ prepare แทน query)
+    $sql_update_ins = "UPDATE automate_model 
+                       SET ref_atm_status_manual_id = 1, 
+                           atm_model_updatedBy = ? 
+                       WHERE atm_model_id IN ($ins_ids)";
+    
+    $stmt1 = $db->prepare($sql_update_ins);
+    if (!$stmt1) {
+        throw new Exception("Prepare Error (Table Model): " . $db->error);
+    }
+    
+    $stmt1->bind_param("s", $updated_by);
+    if (!$stmt1->execute()) {
+        throw new Exception("Execute Error (Table Model): " . $stmt1->error);
+    }
 
-        // บันทึกการเปลี่ยนแปลงทั้งหมด
-        $db->commit();
+    // 3. อัปเดตสถานะการนัดหมายให้เป็น 'เสร็จสิ้น'
+    $sql_update_train = "UPDATE instrument_training 
+                         SET training_status = 1, 
+                             confirmed_by = ?, 
+                             confirmed_at = NOW() 
+                         WHERE training_id = ?";
+    
+    // ตรงนี้ไม่มี ? ใช้ query ปกติได้ แต่แนะนำใช้ prepare เพื่อความปลอดภัยเหมือนกัน
+    $stmt2 = $db->prepare($sql_update_train);
+    if (!$stmt2) {
+        throw new Exception("Prepare Error (Table Training): " . $db->error);
+    }
+
+    // bind_param: s (ชื่อ), i (ID การเทรน)
+    $stmt2->bind_param("si", $updated_by, $training_id);
+    
+    if (!$stmt2->execute()) {
+        throw new Exception("ไม่สามารถอัปเดตสถานะการยืนยันได้: " . $stmt2->error);
+    }
+
+    // บันทึกการเปลี่ยนแปลงทั้งหมด
+    $db->commit();
 
         // ส่งกลับไปหน้าประวัติพร้อมแจ้งเตือนสำเร็จ
         header("Location: ?act=training_history&status=update_success");

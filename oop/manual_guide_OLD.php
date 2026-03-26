@@ -5,8 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // 1. ดึงระบบ Auto-Login สำหรับ Local (ถ้ามีไฟล์แยกให้ require มา)
-require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php'; //local
-// $permission_path = __DIR__ . '/../config/permission.php'; //proguction
+// require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php';
+$permission_path = __DIR__ . '/../config/permission.php';
 
 // 2. เช็คสิทธิ์: ถ้าไม่มี Session หรือ สิทธิ์น้อยกว่า 1 (สิทธิ์ 0) ให้ดีดออก
 if (!isset($_SESSION['user_instrument']) || (int)$_SESSION['user_instrument'] < 1) { 
@@ -35,7 +35,7 @@ if (!isset($_SESSION['user_instrument']) || (int)$_SESSION['user_instrument'] < 
 
 <?php
 
-var_dump($_SESSION);
+// var_dump($_SESSION);
 $ins_id = (int)($_GET['id'] ?? 0);
 // require_once __DIR__ . '/../config/permission.php';
 // if (!isset($_SESSION['user_instrument']) || $_SESSION['user_instrument'] < "1") { 
@@ -319,13 +319,13 @@ $result = $stmt->get_result();
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
-                            <li><a class="dropdown-item" href="?act=view&id=<?= $row['ins_id'] ?>"><i class="bi bi-eye text-primary me-2" target="_blank" ></i>ดูรายละเอียด</a></li>
+                            <li><a class="dropdown-item" href="?act=view&id=<?= $row['ins_id'] ?>"><i class="bi bi-eye text-primary me-2"></i>ดูรายละเอียด</a></li>
                             
                             <?php if (checkLevel(2)): ?>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item"  href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic" target="_blank"><i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูล</a></li>
-                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=upload" target="_blank"><i class="bi bi-images text-success me-2"></i>อัปโหลดภาพ</a></li>
-                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=sort" target="_blank"><i class="bi bi-arrow-down-up text-info me-2"></i>ลบเเละจัดลำดับภาพ</a></li>
+                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic"><i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูล</a></li>
+                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=upload"><i class="bi bi-images text-success me-2"></i>อัปโหลดภาพ</a></li>
+                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=sort"><i class="bi bi-arrow-down-up text-info me-2"></i>ลบเเละจัดลำดับภาพ</a></li>
                             <?php endif; ?>
                         </ul>
                     </div>
@@ -447,50 +447,65 @@ $result = $stmt->get_result();
     </nav>
   </div>
 
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. จัดการ Error Script จาก PHP
-    <?php if (isset($error_script)) echo $error_script; ?>
-
-    // 2. จัดการ Status ต่างๆ ผ่าน URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const status = urlParams.get('status');
-
-    if (status) {
-        let title = '';
-        let icon = 'success';
-
-        // รองรับหลายสถานะในชุดเดียว
-        switch(status) {
-            case 'cancel_success': title = 'ยกเลิกนัดเทรนเรียบร้อย'; break;
-            // case 'train_success':  title = 'บันทึกการเทรนสำเร็จ'; break;
-            case 'delete_success': title = 'ลบข้อมูลเรียบร้อย'; break;
-            // case 'no_permission':  title = 'คุณไม่มีสิทธิ์เข้าถึงหน้าจอี้'; icon = 'error'; break;
-        }
-
-        if (title) {
-            Swal.fire({
-                icon: icon,
-                title: title,
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 2000,
-                timerProgressBar: true
-            });
-
-            // ✅ ล้าง URL ทันทีหลังจากสั่งโชว์ Swal (ไม่ต้องรอจบ Timer)
-            let url = new URL(window.location.href);
-            url.searchParams.delete('status');
-            window.history.replaceState({}, '', url);
-        }
-    }
-});
-</script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="<?= BASE_URL ?>assets/js/manual_guide.js"></script>
+<?php if (isset($_GET['status']) && $_GET['status'] == 'cancel_success'): ?>
+        <script>
+            // ใช้ SweetAlert2 สร้าง Toast มุมขวาบน
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end', // มุมขวาบน
+                showConfirmButton: false,
+                timer: 3000, // แสดง 3 วินาที
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: 'ยกเลิกนัดหมายสำเร็จ!',
+                // text: 'ระบบได้คืนค่าสถานะเครื่องตรวจเรียบร้อยแล้ว'
+            });
+
+            // ทริค: ลบ status ออกจาก URL เพื่อไม่ให้ Refresh แล้วเด้งซ้ำ
+            if (typeof window.history.replaceState === 'function') {
+                const url = new URL(window.location);
+                url.searchParams.delete('status');
+                window.history.replaceState({}, '', url);
+            }
+        </script>
+<?php endif; ?>
+<?php if (isset($_GET['status']) && $_GET['status'] == 'no_permission'): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // เช็คว่ามี Swal หรือไม่ป้องกัน Error
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'จำกัดการเข้าถึง!',
+                    text: 'คุณไม่มีสิทธิ์ดำเนินการในส่วนนี้ กรุณาติดต่อผู้ดูแลระบบ',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#d33', // สีแดง
+                    allowOutsideClick: false,    // บังคับให้ต้องกดปุ่มเท่านั้น ห้ามคลิกข้างนอกเพื่อปิด
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // เมื่อกดปุ่ม 'ตกลง' ให้ลบค่า status ออกจาก URL เพื่อความสะอาด
+                        if (typeof window.history.replaceState === 'function') {
+                            const url = new URL(window.location);
+                            url.searchParams.delete('status');
+                            window.history.replaceState({}, '', url);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+<?php endif; ?>
+
 <footer class="main-footer">
     <div class="container">
         <div class="row align-items-center">
@@ -508,5 +523,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </footer>
 </body>
 </html>
-
 

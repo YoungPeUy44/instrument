@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $notify_type = 'train';
         include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
         
-        header("Location: " . BASE_URL . "?act=training_history&status=train_success&count=" .$success_count);
+        header("Location: " . BASE_URL . "?act=training_history&status=train_success");
         exit;
         
     } catch (Exception $e) {

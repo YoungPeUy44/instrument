@@ -5,15 +5,27 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
-
-// --- ส่วน Auto-Login Local (ย้ายมาไว้ที่นี่ที่เดียว) ---
+// --- ส่วน Auto-Login Local ---
 require_once __DIR__ . '/env.php';
+
 if (defined('APP_ENV') && APP_ENV === 'local' && !isset($_SESSION['user_instrument'])) {
+    // เซตสิทธิ์การใช้งาน (Level)
     $_SESSION['user_instrument'] = "3"; 
+    
+    // ✅ เพิ่มการเซต user_id เป็น 3 เพื่อให้เงื่อนไขปุ่มลบ (ID=3) ทำงานได้ในเครื่อง Local
+    $_SESSION['user_id'] = "3"; 
+    
+    // (Optional) เซตชื่อเพื่อใช้โชว์ในระบบ
+    $_SESSION['user_firstname'] = "Young";
+    $_SESSION['user_lastname'] = "PeUy";
 }
 
 // --- ฟังก์ชันเช็คสิทธิ์แบบสั้น ---
 function checkLevel($level) {
     return isset($_SESSION['user_instrument']) && (int)$_SESSION['user_instrument'] >= $level;
+}
+
+// --- ✅ เพิ่มฟังก์ชันเช็ค ID เฉพาะตัว (ถ้าต้องการใช้งานบ่อยๆ) ---
+function isMe() {
+    return isset($_SESSION['user_id']) && (string)$_SESSION['user_id'] === "3";
 }

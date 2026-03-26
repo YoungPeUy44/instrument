@@ -28,7 +28,7 @@ if ($id > 0) {
         $stmt2->execute();
 
         $conn->commit();
-        header("Location: index.php?act=manual_guide&status=delete_success");
+        header("Location: ?act=manual_guide&status=delete_success");
         exit;
     } catch (Exception $e) {
         $conn->rollback();
