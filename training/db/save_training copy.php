@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ตรวจสอบข้อมูลเบื้องต้น
     if (empty($topic) || empty($location) || empty($start) || empty($end) || empty($ins_ids)) {
         $error = urlencode('กรุณากรอกข้อมูลให้ครบถ้วน');
-        header("Location: " . BASE_URL . "?act=train&status=error&msg=" . $error);
+        header("Location: " . BASE_URL . "?act=manual_guide&status=error&msg=" . $error);
         exit;
     }
     
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($end_ts <= $start_ts) {
         $error = urlencode('เวลาเริ่มต้นต้องน้อยกว่าเวลาสิ้นสุด');
-        header("Location: " . BASE_URL . "?act=train&status=error&msg=" . $error);
+        header("Location: " . BASE_URL . "?act=manual_guide&status=error&msg=" . $error);
         exit;
     }
     
@@ -91,83 +91,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $training_id = $conn->insert_id;
         $success_count = 0;
-        $instrument_list = []; // สร้าง Array ไว้เก็บข้อมูลเครื่องตรวจ (ID และ ชื่อ)
         
-
-        // บันทึกเครื่องตรวจลง mapping table
+        // บันทึกเครื่องตรวจ
         $stmt_item = $conn->prepare("INSERT INTO instrument_training_items (training_id, instrument_id) VALUES (?, ?)");
-        // เตรียม SQL สำหรับดึงชื่อเครื่องตรวจ
-        $stmt_get_name = $conn->prepare("SELECT atm_model_name FROM automate_model WHERE atm_model_id = ?");
-
+        $stmt_status = $conn->prepare("UPDATE automate_model SET ref_atm_status_manual_id = 3 WHERE atm_model_id = ?");
+        
         foreach ($ins_ids as $ins_id) {
             $ins_id = (int)$ins_id;
             if ($ins_id <= 0) continue;
-
-            // 1. บันทึกข้อมูลลงตาราง Mapping
-            $stmt_item->bind_param("ii", $training_id, $ins_id);
-            $stmt_item->execute();
             
-            // 2. ดึงชื่อเครื่องตรวจมาเก็บไว้สำหรับส่ง Line
-            $stmt_get_name->bind_param("i", $ins_id);
-            $stmt_get_name->execute();
-            $res_name = $stmt_get_name->get_result();
-            $row_name = $res_name->fetch_assoc();
-            $ins_name = $row_name['atm_model_name'] ?? 'ไม่ทราบชื่อ';
-
-            // เก็บเข้า Array เพื่อใส่ใน Payload
-            $instrument_list[] = [
-                'id' => $ins_id,
-                'name' => $ins_name
-            ];
-
+            $stmt_item->bind_param("ii", $training_id, $ins_id);
+            if (!$stmt_item->execute()) {
+                throw new Exception("Insert item failed: " . $stmt_item->error);
+            }
             $success_count++;
             
-            // 3. อัปเดตสถานะเครื่องตรวจ (ถ้ามี)
-            $stmt_status = $conn->prepare("UPDATE automate_model SET ref_atm_status_manual_id = 3 WHERE atm_model_id = ?");
             $stmt_status->bind_param("i", $ins_id);
             $stmt_status->execute();
         }
-
+        
+        $stmt_item->close();
+        $stmt_status->close();
+        $stmt->close();
+        
         $conn->commit();
 
-        // --- ส่วน Payload สำหรับส่งแจ้งเตือน ---
-        $line_payload = [
-            'topic'       => $topic,
-            'location'    => $location,
-            'start'       => $start_mysql,
-            'end'         => $end_mysql,
-            'detail'      => $detail,
-            'instruments' => $instrument_list, // ส่งเป็น Array ของ Object (มีทั้ง ID และ Name)
-            'created_by'  => $created_by
-        ];
-
-                // ===============================
-        // ||       NOTIFY TYPE         ||
-        // ===============================
-        // $notify_type = 'debug';
-        $notify_type = 'train';
-        include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
+        // include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/training_noti_line.php');
         
-        header("Location: " . BASE_URL . "?act=training_history&status=train_success&count=" .$success_count);
+        header("Location: " . BASE_URL . "?act=manual_guide&status=train_success&count=" . $success_count);
         exit;
         
     } catch (Exception $e) {
         $conn->rollback();
         $error_msg = urlencode($e->getMessage());
-        header("Location: " . BASE_URL . "?act=train&status=error&msg=" . $error_msg);
+        header("Location: " . BASE_URL . "?act=manual_guide&status=error&msg=" . $error_msg);
         exit;
     }
     
 } else {
-    header("Location: " . BASE_URL . "?act=train");
+    header("Location: " . BASE_URL . "?act=manual_guide");
     exit;
 }
-// LIne noti "$line_payload"
-    // 'หัวข้อการเทรน' => $topic,
-    // 'ตำแหน่ง' => $location,
-    // 'start' => $start_mysql,
-    // 'end' => $end_mysql,
-    // 'รายละเอียด' => $detail,
-    // 'ID เเละชื่อเครื่องตรวจ' => $instrument_list, 
-    // 'created_by' => $created_by
 ?>

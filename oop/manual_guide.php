@@ -1,8 +1,44 @@
 <?php
-session_start();
-$ins_id = (int)($_GET['id'] ?? 0);
 
-// if (!isset($_SESSION['user_instrument']) || $_SESSION['user_instrument'] != "1") { 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// 1. ดึงระบบ Auto-Login สำหรับ Local (ถ้ามีไฟล์แยกให้ require มา)
+require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php';
+// $permission_path = __DIR__ . '/../config/permission.php';
+
+// 2. เช็คสิทธิ์: ถ้าไม่มี Session หรือ สิทธิ์น้อยกว่า 1 (สิทธิ์ 0) ให้ดีดออก
+if (!isset($_SESSION['user_instrument']) || (int)$_SESSION['user_instrument'] < 1) { 
+    echo "
+    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'warning',
+                title: 'จำกัดการเข้าถึง!',
+                text: 'คุณไม่มีสิทธิ์ดำเนินการในส่วนนี้ กรุณาติดต่อผู้ดูแลระบบ',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#ffc107',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 🔙 ดีดกลับไปหน้า Login หลักของระบบ (ปรับ Path ตามจริง)
+                    window.history.back(); 
+                }
+            });
+        });
+    </script>";
+    exit; 
+}
+?>
+
+<?php
+
+var_dump($_SESSION);
+$ins_id = (int)($_GET['id'] ?? 0);
+// require_once __DIR__ . '/../config/permission.php';
+// if (!isset($_SESSION['user_instrument']) || $_SESSION['user_instrument'] < "1") { 
 //     echo "
 //     <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 //     <script>
@@ -27,7 +63,8 @@ require_once __DIR__ . '/../config/paths.php';
 require_once __DIR__ . '/../db/db.php';
 require_once __DIR__ . '/../config/auth.php';
 require_once __DIR__ . '/../config/helpers.php';
-// require_once __DIR__ . '/../config/check_permission.php';
+require_once __DIR__ . '/../config/permission.php';
+
 
 $connpeuy = db();
 $connpeuy->set_charset('utf8mb4');
@@ -101,9 +138,10 @@ $sql = "SELECT i.*,
         INNER JOIN automate_category c ON m.ref_atm_category_id = c.atm_category_id
         LEFT JOIN instrument_cable_types t ON t.cable_id = i.cable_type_id
         WHERE $where_sql
-        ORDER BY 
-            (i.updated_at IS NULL) ASC, -- NULL อยู่ล่างสุด
-            i.updated_at $sort_order
+       ORDER BY 
+            (m.ref_atm_status_manual_id = 1) DESC, -- สถานะ ID=1 จะถูกดันขึ้นบนสุด
+            i.updated_at DESC,                    -- ตามด้วยตัวที่เพิ่งอัปเดตล่าสุด
+            i.ins_id DESC
         LIMIT ?, ?";
 
 $finalParams = $params;
@@ -142,10 +180,26 @@ $result = $stmt->get_result();
       <a href="../" class="btn btn-outline-primary me-3 shadow-sm border-2 rounded-3" title="กลับหน้าหลักระบบ">
         <i class="bi bi-house-door-fill"></i>
       </a>
-      <h1 class="h3 mb-0 fw-bold">
-        <a href="?act=train" class="bi bi-list-stars me-2 text-primary" title="คู่มือเดิม"></a>
-          คู่มือเครื่องตรวจ</h1>
+      <h1 class="h3 mb-0 fw-bold d-flex justify-content-between align-items-center w-100">
+    <span>คู่มือเครื่องตรวจ</span>
+    <div class="d-flex gap-2">
+        <a href="?act=training_history" class="btn btn-outline-dark shadow-sm rounded-pill px-3 d-flex align-items-center" title="ดูประวัติการเทรน">
+            <i class="bi bi-clock-history me-2"></i>
+            <!-- <span class="small fw-bold">ประวัติการเทรน</span> -->
+            <span class="d-none d-md-inline ms-1">ประวัติการเทรน</span>
+        </a>
+        <!-- นัดหมายเทรน permission=2 -->
         
+            
+                <a href="?act=train" class="btn btn-warning shadow-sm rounded-pill px-3 d-flex align-items-center" title="นัดหมายเทรนใหม่">
+                    <i class="bi bi-mortarboard-fill me-2"></i>
+                    <!-- <span class="small fw-bold">นัดหมายเทรน</span> -->
+                    <span class="d-none d-md-inline ms-1">นัดหมายเทรน</span>
+                </a>
+            
+        
+    </div>
+    </h1>
     </div>
     
 
@@ -186,7 +240,7 @@ $result = $stmt->get_result();
     </form>
 
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="text-muted small">พบทั้งหมด <?= $total_items ?> รายการ</div>
         <div class="btn-group shadow-sm" role="group">
             <a href="?act=manual_guide&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>&sort=desc" 
@@ -198,7 +252,7 @@ $result = $stmt->get_result();
                 <i class="bi bi-sort-up"></i> เก่าสุด
             </a>
         </div>
-    </div>
+    </div> -->
 
     
 
@@ -265,14 +319,14 @@ $result = $stmt->get_result();
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
-                            <li><a class="dropdown-item" href="?act=view&id=<?= $row['ins_id'] ?>"><i class="bi bi-eye text-primary me-2"></i>ดูรายละเอียด</a></li>
-                            <!-- สิทธิ์การใช้งานหน้าเว็บ -->
+                            <li><a class="dropdown-item" href="?act=view&id=<?= $row['ins_id'] ?>"><i class="bi bi-eye text-primary me-2" target="_blank" ></i>ดูรายละเอียด</a></li>
                             
+                            <?php if (checkLevel(2)): ?>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic"><i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูล</a></li>
-                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=upload"><i class="bi bi-images text-success me-2"></i>อัปโหลดภาพ</a></li>
-                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=sort"><i class="bi bi-arrow-down-up text-info me-2"></i>ลบเเละจัดลำดับภาพ</a></li>
-                            
+                            <li><a class="dropdown-item"  href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic" target="_blank"><i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูล</a></li>
+                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=upload" target="_blank"><i class="bi bi-images text-success me-2"></i>อัปโหลดภาพ</a></li>
+                            <li><a class="dropdown-item" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=sort" target="_blank"><i class="bi bi-arrow-down-up text-info me-2"></i>ลบเเละจัดลำดับภาพ</a></li>
+                            <?php endif; ?>
                         </ul>
                     </div>
                   </td>
@@ -283,13 +337,14 @@ $result = $stmt->get_result();
         </table>
       </div>
     </div>
+    
 <!-- มือถือ -->
    <div class="d-md-none">
     <?php if ($result->num_rows === 0): ?>
         <div class="text-center p-5 text-muted">ไม่พบข้อมูลเครื่องตรวจ</div>
     <?php else: ?>
         <?php $result->data_seek(0); while($row = $result->fetch_assoc()): ?>
-            <div class="card card-instrument mb-3 shadow-sm border-0 overflow-hidden" onclick="window.location='?act=view&id=<?= $row['ins_id'] ?>';">
+            <div class="card card-instrument mb-3 shadow-sm border-0 overflow-visible"> 
                 <div class="row g-0">
                     <div class="col-4">
                         <img src="<?= img_src($row['equipment_image']) ?>" 
@@ -302,27 +357,37 @@ $result = $stmt->get_result();
                         <div class="card-body p-2 px-3">
                             <div class="d-flex justify-content-between align-items-start mb-1">
                                 <div class="text-truncate" style="max-width: 85%;">
-                                    <h6 class="fw-bold mb-0 text-dark text-truncate"><?= htmlspecialchars($row['name']) ?></h6>
+                                    <a href="?act=view&id=<?= $row['ins_id'] ?>" class="text-decoration-none">
+                                        <h6 class="fw-bold mb-0 text-dark text-truncate"><?= htmlspecialchars($row['name']) ?></h6>
+                                    </a>
                                     
                                     <?php 
-                                    $s_id = $row['ref_atm_status_manual_id'];
-                                    if ($s_id == 1): ?>
-                                        <small class="text-success"><i class="bi bi-check-circle-fill me-1"></i>พร้อม</small>
-                                    <?php elseif ($s_id == 3): ?>
-                                        <small class="text-warning"><i class="bi bi-hourglass-split me-1"></i>รอเทรน</small>
-                                    <?php else: ?>
-                                        <small class="text-secondary opacity-50"><i class="bi bi-dash-circle-fill me-1"></i>ไม่พร้อม</small>
-                                    <?php endif; ?>
+                                    if (checkLevel(1)): 
+                                        $s_id = $row['ref_atm_status_manual_id'];
+                                        if ($s_id == 1): ?>
+                                            <small class="text-success"><i class="bi bi-check-circle-fill me-1"></i>พร้อม</small>
+                                        <?php elseif ($s_id == 3): ?>
+                                            <small class="text-warning"><i class="bi bi-hourglass-split me-1"></i>รอเทรน</small>
+                                        <?php else: ?>
+                                            <small class="text-secondary opacity-50"><i class="bi bi-dash-circle-fill me-1"></i>ไม่พร้อม</small>
+                                        <?php endif; 
+                                    endif; // จบการเช็คสิทธิ์ 
+                                    ?>
                                 </div>
 
-                                <div class="dropdown" onclick="event.stopPropagation();">
-                                    <i class="bi bi-three-dots-vertical text-muted fs-4" data-bs-toggle="dropdown"></i>
+                                <div class="dropdown">
+                                    <i class="bi bi-three-dots-vertical text-muted fs-4 p-2" 
+                                       data-bs-toggle="dropdown" 
+                                       data-bs-boundary="viewport"
+                                       style="cursor: pointer;"></i>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
                                         <li><a class="dropdown-item py-2" href="?act=view&id=<?= $row['ins_id'] ?>"><i class="bi bi-eye text-primary me-2"></i>ดูรายละเอียด</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic"><i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูล</a></li>
-                                        <li><a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=upload"><i class="bi bi-images text-success me-2"></i>อัปโหลดภาพ</a></li>
-                                        <li><a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=sort"><i class="bi bi-sort-numeric-down text-primary me-2"></i>จัดลำดับภาพ</a></li>
+                                        <?php if (checkLevel(2)): ?>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=basic"><i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูล</a></li>
+                                            <li><a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=upload"><i class="bi bi-images text-success me-2"></i>อัปโหลดภาพ</a></li>
+                                            <li><a class="dropdown-item py-2" href="?act=edit&id=<?= $row['ins_id'] ?>&mode=sort"><i class="bi bi-sort-numeric-down text-primary me-2"></i>จัดลำดับภาพ</a></li>
+                                        <?php endif; ?>
                                     </ul>
                                 </div>
                             </div>
@@ -335,7 +400,9 @@ $result = $stmt->get_result();
                                 <small class="text-muted" style="font-size: 0.6rem;">
                                     <i class="bi bi-clock me-1"></i><?= date('d/m/y', strtotime($row['updated_at'] ?? $row['created_at'])) ?>
                                 </small>
-                                <span class="text-primary fw-bold" style="font-size: 0.75rem;">เปิดดูคู่มือ <i class="bi bi-chevron-right"></i></span>
+                                <a href="?act=view&id=<?= $row['ins_id'] ?>" class="text-primary fw-bold text-decoration-none" style="font-size: 0.75rem;">
+                                    เปิดดูคู่มือ <i class="bi bi-chevron-right"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -343,7 +410,7 @@ $result = $stmt->get_result();
             </div>
         <?php endwhile; ?>
     <?php endif; ?>
-    </div>
+</div>
 
     <nav class="py-3">
         <ul class="pagination pagination-sm justify-content-center mb-0">
@@ -380,23 +447,95 @@ $result = $stmt->get_result();
     </nav>
   </div>
 
+<?php if (isset($_GET['status']) && $_GET['status'] == 'cancel_success'): ?>
+        <script>
+            // ใช้ SweetAlert2 สร้าง Toast มุมขวาบน
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end', // มุมขวาบน
+                showConfirmButton: false,
+                timer: 3000, // แสดง 3 วินาที
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: 'ยกเลิกนัดหมายสำเร็จ!',
+                // text: 'ระบบได้คืนค่าสถานะเครื่องตรวจเรียบร้อยแล้ว'
+            });
+
+            // ทริค: ลบ status ออกจาก URL เพื่อไม่ให้ Refresh แล้วเด้งซ้ำ
+            if (typeof window.history.replaceState === 'function') {
+                const url = new URL(window.location);
+                url.searchParams.delete('status');
+                window.history.replaceState({}, '', url);
+            }
+        </script>
+<?php endif; ?>
+
+<?php if (isset($_GET['status']) && $_GET['status'] == 'delete_success'): ?>
+        <script>
+            // ใช้ SweetAlert2 สร้าง Toast มุมขวาบน
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end', // มุมขวาบน
+                showConfirmButton: false,
+                timer: 3000, // แสดง 3 วินาที
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: 'ลบไฟล์เรียบร้อย!',
+                // text: 'ระบบได้คืนค่าสถานะเครื่องตรวจเรียบร้อยแล้ว'
+            });
+
+            // ทริค: ลบ status ออกจาก URL เพื่อไม่ให้ Refresh แล้วเด้งซ้ำ
+            if (typeof window.history.replaceState === 'function') {
+                const url = new URL(window.location);
+                url.searchParams.delete('status');
+                window.history.replaceState({}, '', url);
+            }
+        </script>
+<?php endif; ?>
+
+<?php if (isset($_GET['status']) && $_GET['status'] == 'no_permission'): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // เช็คว่ามี Swal หรือไม่ป้องกัน Error
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'จำกัดการเข้าถึง!',
+                    text: 'คุณไม่มีสิทธิ์ดำเนินการในส่วนนี้ กรุณาติดต่อผู้ดูแลระบบ',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#d33', // สีแดง
+                    allowOutsideClick: false,    // บังคับให้ต้องกดปุ่มเท่านั้น ห้ามคลิกข้างนอกเพื่อปิด
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // เมื่อกดปุ่ม 'ตกลง' ให้ลบค่า status ออกจาก URL เพื่อความสะอาด
+                        if (typeof window.history.replaceState === 'function') {
+                            const url = new URL(window.location);
+                            url.searchParams.delete('status');
+                            window.history.replaceState({}, '', url);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+<?php endif; ?>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="<?= BASE_URL ?>assets/js/manual_guide.js"></script>
-<footer class="main-footer">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
-                <!-- ดึงปีปัจจุบันมาแสดงอัตโนมัติ -->
-                <strong>Copyright © 2025 - <?= date('Y') ?></strong>  Support The Operation, Executive Team
-            </div>
-            <div class="col-md-6 text-center text-md-end text-muted">
-                <small>
-                    <b>Version</b> 2.0
-                </small>
-            </div>
-        </div>
-    </div>
-</footer>
-</body>
-</html>
+
 

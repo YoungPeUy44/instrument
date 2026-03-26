@@ -3,14 +3,8 @@
 
 // ตรวจสอบชื่อ Server ที่รันอยู่
 if ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_ADDR'] === '127.0.0.1') {
-    // เช็คก่อนว่ามีการประกาศ APP_ENV ไปหรือยัง
-    if (!defined('APP_ENV')) {
-        define('APP_ENV', 'local');
-    }
+    define('APP_ENV', 'local');
 } else {
     // ถ้าไม่ใช่ localhost ให้ถือว่าเป็น production ทันที
-    if (!defined('APP_ENV')) {
-        define('APP_ENV', 'production');
-    }
+    define('APP_ENV', 'production');
 }
-?>

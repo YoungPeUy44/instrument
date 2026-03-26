@@ -1,0 +1,253 @@
+:root {
+    --primary-color: #ffc107;
+    --primary-dark: #e0a800;
+    --border-radius-card: 1rem;
+}
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+.card-custom {
+    border: none;
+    border-radius: var(--border-radius-card);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+.card-custom:hover {
+    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+}
+.btn-warning-custom {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border: none;
+    color: #000;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    transition: all 0.3s;
+}
+.btn-warning-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255,193,7,0.4);
+    color: #000;
+}
+.table-custom {
+    margin-bottom: 0;
+}
+.table-custom thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid var(--primary-color);
+    padding: 1rem 0.75rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #495057;
+    white-space: nowrap;
+}
+.table-custom tbody tr {
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.table-custom tbody tr:hover {
+    background-color: #fff9e6;
+    transform: translateX(5px);
+}
+.table-custom td {
+    padding: 0.85rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+}
+.badge-instrument {
+    background: #eef2ff;
+    color: #4338ca;
+    border-radius: 2rem;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0.15rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.badge-instrument:hover {
+    background: #e0e7ff;
+    transform: scale(1.02);
+}
+.badge-status-completed {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 0.35rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+.badge-status-pending {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: #000;
+    padding: 0.35rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+.badge-status-cancelled {
+    background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); /* สีเทา Slate แบบไล่เฉด */
+    color: white;
+    padding: 0.35rem 1rem;
+    border-radius: 4rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+.timeline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #f8f9fa;
+    padding: 0.35rem 0.8rem;
+    border-radius: 0.6rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+.id-badge {
+    background: #f8f9fa;
+    color: var(--primary-color);
+    border-radius: 2rem;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: inline-block;
+}
+.training-topic {
+    white-space: normal !important; /* ยอมให้ข้อความขึ้นบรรทัดใหม่ */
+    overflow: visible !important;   /* แสดงข้อความที่เกินออกมา */
+    text-overflow: clip !important; /* เอาจุดไข่ปลาออก */
+    display: block !important;      /* เปลี่ยนจากการเป็น Webkit-box */
+    max-height: none !important;    /* ปลดล็อกความสูง */
+}
+.created-by {
+    font-size: 0.7rem;
+    color: #6c757d;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #f8f9fa;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    white-space: nowrap;
+}
+.location-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    display: inline-block;
+}
+.instruments-container {
+    display: flex;
+    flex-wrap: wrap; /* ให้ชื่อเครื่องตรวจขึ้นบรรทัดใหม่เองเมื่อพื้นที่เต็ม */
+    gap: 4px;
+    max-height: none !important; /* ป้องกันการจำกัดความสูง */
+    overflow: visible !important; /* ปิด scrollbar ภายใน */
+}
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+.empty-state i {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+.detail-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #6c757d;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+.detail-value {
+    font-size: 0.95rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+
+}
+.table-responsive {
+    overflow-x: visible !important; /* เปลี่ยนจาก auto เป็น visible */
+    overflow-y: visible !important;
+}
+
+/* ลบ Scrollbar ของ Browser (ถ้าต้องการให้หน้าเว็บดูเรียบเนียนที่สุด) */
+.table-responsive::-webkit-scrollbar {
+    display: none; /* สำหรับ Chrome, Safari และ Opera */
+}
+
+.table-responsive {
+    -ms-overflow-style: none;  /* สำหรับ IE และ Edge */
+    scrollbar-width: none;  /* สำหรับ Firefox */
+}
+.bg-secondary {
+    background-color: #6c757d !important; /* สีเทาเข้ม */
+    color: white !important;
+    padding: 0.4em 0.8em;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* ทำให้แถวที่ยกเลิกแล้วดูจางลงเล็กน้อย (Optional) */
+tr.status-cancelled {
+    opacity: 0.7;
+    background-color: #f8f9fa;
+}
+/* จัดการสีพื้นหลังรายละเอียดเพิ่มเติม */
+.bg-light-gray {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    min-height: 80px; /* กำหนดความสูงขั้นต่ำเผื่อไม่มีข้อมูล */
+}
+
+/* สไตล์สำหรับ Badge สถานะสำเร็จ (เข้มขึ้นตามรูป) */
+.badge-status-completed {
+    background-color: #198754; /* สีเขียว Bootstrap Success */
+    color: white;
+    padding: 0.5em 1.2em;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* สไตล์สำหรับ Badge เครื่องตรวจ (พื้นหลังฟ้าอ่อน) */
+#modal_instruments .badge-instrument {
+    background-color: #e7f1ff; /* สีฟ้าอ่อน */
+    color: #0c63e4;
+    border: 1px solid #cfe2f3;
+    padding: 0.4em 1em;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* ทำให้ Modal Header ดูเนียนไปกับขอบโค้ง */
+#detailModal .modal-content {
+    border-radius: 1rem !important;
+}
+#detailModal .modal-header {
+    border-top-left-radius: calc(1rem - 1px) !important;
+    border-top-right-radius: calc(1rem - 1px) !important;
+}
