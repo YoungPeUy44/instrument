@@ -16,31 +16,25 @@ if (!isset($item) || !isset($conn)) {
                 <i class="bi bi-pencil-square text-primary me-2"></i>แก้ไขข้อมูลพื้นฐาน
             </div>
 
-            <!-- <div class="btn-group shadow-sm" role="group">
+            <div class="btn-group shadow-sm" role="group">
                 <input type="radio" class="btn-check" name="status_selector" id="status_ready" value="1" 
-                    <?= ($item['ref_atm_status_manual_id'] == 1) ? 'checked' : '' ?> 
-                    onclick="confirmStatusChange(this, 1, 'พร้อม', 'success')">
+                    <?= (isset($item['ref_atm_status_manual_id']) && $item['ref_atm_status_manual_id'] == 1) ? 'checked' : '' ?> autocomplete="off">
                 <label class="btn btn-outline-success btn-sm px-3 py-1 fw-bold" for="status_ready">
                     <i class="bi bi-check-circle me-1"></i>พร้อม
                 </label>
 
                 <input type="radio" class="btn-check" name="status_selector" id="status_training" value="3" 
-                    <?= ($item['ref_atm_status_manual_id'] == 3) ? 'checked' : '' ?>
-                    onclick="confirmStatusChange(this, 3, 'รอเทรน', 'warning')">
+                    <?= (isset($item['ref_atm_status_manual_id']) && $item['ref_atm_status_manual_id'] == 3) ? 'checked' : '' ?> autocomplete="off">
                 <label class="btn btn-outline-warning btn-sm px-3 py-1 fw-bold text-dark" for="status_training">
                     <i class="bi bi-hourglass-split me-1"></i>รอเทรน
                 </label>
 
                 <input type="radio" class="btn-check" name="status_selector" id="status_not_ready" value="2" 
-                    <?= ($item['ref_atm_status_manual_id'] == 2) ? 'checked' : '' ?>
-                    onclick="confirmStatusChange(this, 2, 'ไม่พร้อม', 'danger')">
+                    <?= (isset($item['ref_atm_status_manual_id']) && $item['ref_atm_status_manual_id'] == 2) ? 'checked' : '' ?> autocomplete="off">
                 <label class="btn btn-outline-danger btn-sm px-3 py-1 fw-bold" for="status_not_ready">
                     <i class="bi bi-x-circle me-1"></i>ไม่พร้อม
                 </label>
-            </div> -->
-
-            <!-- <input type="hidden" id="current_status_val" value="<?= $item['ref_atm_status_manual_id'] ?>"> -->
-
+            </div>
         </div>
     </div>
 

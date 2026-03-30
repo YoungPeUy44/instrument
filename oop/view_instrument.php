@@ -62,9 +62,9 @@ $det   = $conn->query("SELECT * FROM instrument_determination WHERE instrument_i
         <h4 class="mb-0 fw-bold text-dark">
             <i class="bi bi-display me-2 text-primary"></i><?= htmlspecialchars($item['name']) ?>
         </h4>
-        <a href="<?= BASE_URL ?>?act=manual_guide" class="btn btn-outline-secondary btn-sm px-3 shadow-sm">
-            <i class="bi bi-chevron-left me-1"></i> กลับหน้าหลัก
-        </a>
+        <a href="<?= BASE_URL ?>?act=manual_guide" class="btn btn-outline-dark btn-sm rounded-pill">
+                <i class="bi bi-arrow-left"></i> กลับหน้าหลัก
+            </a>
     </div>
 
     <div class="card mb-4 shadow-sm border-0 rounded-3">
@@ -99,9 +99,9 @@ $det   = $conn->query("SELECT * FROM instrument_determination WHERE instrument_i
                     </div>
 
                     <div class="mt-3">
-                        <small class="text-muted"><i class="bi bi-clock me-1"></i> ล่าสุด: <?= htmlspecialchars($item['updated_at'] ?? $item['live_even']) ?></small>
+                        <small class="text-muted"><i class="bi bi-clock me-1"></i> ล่าสุด: <?= htmlspecialchars($item['updated_at'] ?? $item['live_event']) ?></small>
                         <span class="mx-2 text-muted">|</span>
-                        <small class="text-muted"><i class="bi bi-person me-1"></i> โดย: <?= htmlspecialchars($item['updated_by'] ?: 'System') ?></small>
+                        <small class="text-muted"><i class="bi bi-person me-1"></i> แก้ไขโดย: <?= htmlspecialchars($item['updated_by'] ?: 'System') ?></small>
                     </div>
                 </div>
             </div>
@@ -198,11 +198,7 @@ $det   = $conn->query("SELECT * FROM instrument_determination WHERE instrument_i
     </div>
 </div>
 
-<footer class="main-footer">
-    <div class="container text-center text-muted">
-        <small><strong>Copyright © 2025 - <?= date('Y') ?></strong> Support The Operation</small>
-    </div>
-</footer>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

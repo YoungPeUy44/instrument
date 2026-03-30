@@ -96,12 +96,12 @@ function showDetail(data, userLevel, currentUserId) {
         }
         
         // ปุ่มยกเลิกนัด (ถ้าต้องการให้สิทธิ์ 1 ยกเลิกได้ด้วย)
-        if (userLevel >= 2) {
-            buttonsHtml += `
-                <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmCancel(${data.training_id})">
-                    ยกเลิกนัดเทรน
-                </button>
-            `;
+        if (userDept === 'instrument') {
+        buttonsHtml += `
+            <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmCancel(${data.training_id})">
+                ยกเลิกนัดเทรน
+            </button>
+        `;
         }
     }
 

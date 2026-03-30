@@ -1,0 +1,2102 @@
+=== 2026-03-27 10:39:40 ===
+POST data: Array
+(
+    [ins_id] => 91
+    [mode] => upload
+    [status_selector] => 3
+    [name] => A1CCHEK PRO
+    [cable_type_id] => 1
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'upload'
+INS_ID: 91
+Processing UPLOAD mode
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ? WHERE ins_id = ?
+Types: si
+Update executed successfully
+Redirecting with mode: upload
+Redirect URL: /xct/alt/instrument/?act=edit&id=91&mode=upload&status=success
+
+=== 2026-03-27 10:39:50 ===
+POST data: Array
+(
+    [ins_id] => 91
+    [mode] => upload
+    [status_selector] => 2
+    [name] => A1CCHEK PRO
+    [cable_type_id] => 1
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'upload'
+INS_ID: 91
+Processing UPLOAD mode
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ? WHERE ins_id = ?
+Types: si
+Update executed successfully
+Redirecting with mode: upload
+Redirect URL: /xct/alt/instrument/?act=edit&id=91&mode=upload&status=success
+
+=== 2026-03-27 10:39:53 ===
+POST data: Array
+(
+    [ins_id] => 91
+    [mode] => upload
+    [status_selector] => 1
+    [name] => A1CCHEK PRO
+    [cable_type_id] => 1
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'upload'
+INS_ID: 91
+Processing UPLOAD mode
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ? WHERE ins_id = ?
+Types: si
+Update executed successfully
+Redirecting with mode: upload
+Redirect URL: /xct/alt/instrument/?act=edit&id=91&mode=upload&status=success
+
+=== 2026-03-27 10:39:57 ===
+POST data: Array
+(
+    [ins_id] => 91
+    [mode] => upload
+    [status_selector] => 1
+    [name] => A1CCHEK PRO
+    [cable_type_id] => 1
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'upload'
+INS_ID: 91
+Processing UPLOAD mode
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ? WHERE ins_id = ?
+Types: si
+Update executed successfully
+Redirecting with mode: upload
+Redirect URL: /xct/alt/instrument/?act=edit&id=91&mode=upload&status=success
+
+=== 2026-03-27 10:44:48 ===
+POST data: Array
+(
+    [ins_id] => 91
+    [mode] => basic
+    [status_selector] => 3
+    [name] => A1CCHEK PRO
+    [cable_type_id] => 1
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'basic'
+INS_ID: 91
+Processing BASIC mode
+cable_type_id: 1, config_text length: 0, status: 3
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ?, cable_type_id = ?, config_text = ? WHERE ins_id = ?
+Types: sisi
+Update executed successfully
+Redirecting with mode: basic
+Redirect URL: /xct/alt/instrument/?act=edit&id=91&mode=basic&status=success
+
+=== 2026-03-27 10:44:52 ===
+POST data: Array
+(
+    [ins_id] => 91
+    [mode] => basic
+    [status_selector] => 2
+    [name] => A1CCHEK PRO
+    [cable_type_id] => 1
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'basic'
+INS_ID: 91
+Processing BASIC mode
+cable_type_id: 1, config_text length: 0, status: 2
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ?, cable_type_id = ?, config_text = ? WHERE ins_id = ?
+Types: sisi
+Update executed successfully
+Redirecting with mode: basic
+Redirect URL: /xct/alt/instrument/?act=edit&id=91&mode=basic&status=success
+
+=== 2026-03-27 10:46:05 ===
+POST data: Array
+(
+    [ins_id] => 91
+    [mode] => basic
+    [status_selector] => 3
+    [name] => A1CCHEK PRO
+    [cable_type_id] => 2
+    [config_text] => ้ไกอฟหอแเ้ดผห่้ปกดัะไำ้
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => determination_q4lyteex.zip
+                )
+
+            [full_path] => Array
+                (
+                    [0] => determination_q4lyteex.zip
+                )
+
+            [type] => Array
+                (
+                    [0] => application/x-zip-compressed
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp\tmp\php3994.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 945
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'basic'
+INS_ID: 91
+Processing BASIC mode
+cable_type_id: 2, config_text length: 69, status: 3
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ?, cable_type_id = ?, config_text = ? WHERE ins_id = ?
+Types: sisi
+Update executed successfully
+Redirecting with mode: basic
+Redirect URL: /xct/alt/instrument/?act=edit&id=91&mode=basic&status=success
+
+=== 2026-03-27 10:46:18 ===
+POST data: Array
+(
+    [act] => delete_img
+    [type] => setup
+    [id] => 84
+    [ins_id] => 91
+)
+
+FILES: Array
+(
+)
+
+=== 2026-03-27 10:46:24 ===
+POST data: Array
+(
+    [act] => delete_img
+    [type] => setup
+    [id] => 83
+    [ins_id] => 91
+)
+
+FILES: Array
+(
+)
+
+=== 2026-03-27 10:46:33 ===
+POST data: Array
+(
+    [ins_id] => 91
+    [mode] => sort
+    [status_selector] => 3
+    [name] => A1CCHEK PRO
+    [cable_type_id] => 2
+    [config_text] => ้ไกอฟหอแเ้ดผห่้ปกดัะไำ้
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'sort'
+INS_ID: 91
+Processing SORT mode
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ? WHERE ins_id = ?
+Types: si
+Update executed successfully
+Redirecting with mode: sort
+Redirect URL: /xct/alt/instrument/?act=edit&id=91&mode=sort&status=success
+
+=== 2026-03-27 10:53:46 ===
+POST data: Array
+(
+    [ins_id] => 42
+    [mode] => basic
+    [status_selector] => 3
+    [name] => H8
+    [cable_type_id] => 
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'basic'
+INS_ID: 42
+Processing BASIC mode
+cable_type_id: , config_text length: 0, status: 3
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ?, cable_type_id = NULL, config_text = ? WHERE ins_id = ?
+Types: ssi
+Update executed successfully
+Redirecting with mode: basic
+Redirect URL: /xct/alt/instrument/?act=edit&id=42&mode=basic&status=success
+
+=== 2026-03-27 10:54:51 ===
+POST data: Array
+(
+    [ins_id] => 154
+    [mode] => basic
+    [status_selector] => 3
+    [name] => MACCURA I800
+    [cable_type_id] => 3
+    [config_text] => +++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++
+
+++++++++++++++++++++++++++
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => determination_q4lyteex.zip
+                )
+
+            [full_path] => Array
+                (
+                    [0] => determination_q4lyteex.zip
+                )
+
+            [type] => Array
+                (
+                    [0] => application/x-zip-compressed
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp\tmp\php3F4B.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 945
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'basic'
+INS_ID: 154
+Processing BASIC mode
+cable_type_id: 3, config_text length: 101, status: 3
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ?, cable_type_id = ?, config_text = ? WHERE ins_id = ?
+Types: sisi
+Update executed successfully
+Redirecting with mode: basic
+Redirect URL: /xct/alt/instrument/?act=edit&id=154&mode=basic&status=success
+
+=== 2026-03-27 10:55:04 ===
+POST data: Array
+(
+    [ins_id] => 154
+    [mode] => upload
+    [status_selector] => 3
+    [name] => MACCURA I800
+    [cable_type_id] => 3
+    [config_text] => +++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++
+
+++++++++++++++++++++++++++
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => ErbaLyte_-_Electrolitos-4-removebg-preview.png
+            [full_path] => ErbaLyte_-_Electrolitos-4-removebg-preview.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php71D6.tmp
+            [error] => 0
+            [size] => 81868
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'upload'
+INS_ID: 154
+Processing UPLOAD mode
+Uploaded equipment image: MACCURAI800_8693_20260327_main_87f41.png
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ?, equipment_image = ? WHERE ins_id = ?
+Types: ssi
+Update executed successfully
+Redirecting with mode: upload
+Redirect URL: /xct/alt/instrument/?act=edit&id=154&mode=upload&status=success
+
+=== 2026-03-27 10:55:10 ===
+POST data: Array
+(
+    [act] => delete_img
+    [type] => run
+    [id] => 2
+    [ins_id] => 154
+)
+
+FILES: Array
+(
+)
+
+=== 2026-03-27 10:55:11 ===
+POST data: Array
+(
+    [ins_id] => 154
+    [mode] => sort
+    [status_selector] => 3
+    [name] => MACCURA I800
+    [cable_type_id] => 3
+    [config_text] => +++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++
+
+++++++++++++++++++++++++++
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'sort'
+INS_ID: 154
+Processing SORT mode
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ? WHERE ins_id = ?
+Types: si
+Update executed successfully
+Redirecting with mode: sort
+Redirect URL: /xct/alt/instrument/?act=edit&id=154&mode=sort&status=success
+
+=== 2026-03-28 03:30:13 ===
+POST data: Array
+(
+    [ins_id] => 4
+    [mode] => basic
+    [status_selector] => 1
+    [name] => H9
+    [cable_type_id] => 1
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'basic'
+INS_ID: 4
+Processing BASIC mode
+cable_type_id: 1, config_text length: 0, status: 1
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ?, cable_type_id = ?, config_text = ? WHERE ins_id = ?
+Types: sisi
+Update executed successfully
+Redirecting with mode: basic
+Redirect URL: /xct/alt/instrument/?act=edit&id=4&mode=basic&status=success
+
+=== 2026-03-28 04:21:19 ===
+POST data: Array
+(
+    [ins_id] => 4
+    [mode] => basic
+    [status_selector] => 1
+    [name] => H9
+    [cable_type_id] => 3
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'basic'
+INS_ID: 4
+Processing BASIC mode
+=== 2026-03-28 04:30:57 ===
+POST data: Array
+(
+    [ins_id] => 4
+    [mode] => basic
+    [status_selector] => 1
+    [name] => H9
+    [cable_type_id] => 2
+    [config_text] => 
+)
+
+FILES: Array
+(
+    [determinations] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [equipment_image] => Array
+        (
+            [name] => 
+            [full_path] => 
+            [type] => 
+            [tmp_name] => 
+            [error] => 4
+            [size] => 0
+        )
+
+    [setup_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [run_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+Mode received from POST: 'basic'
+INS_ID: 4
+Processing BASIC mode
+SQL: UPDATE instruments SET updated_at = NOW(), updated_by = ?, cable_type_id = ?, config_text = ?, updated_at = NOW() WHERE ins_id = ?
+Types: sisi
+Update executed successfully
+Redirecting with mode: basic
+Redirect URL: /xct/alt/instrument/?act=edit&id=4&mode=basic&status=success
+
+=== 2026-03-30 07:47:13 ===
+POST data: Array
+(
+    [act] => delete_img
+    [type] => setup
+    [id] => 85
+    [ins_id] => 91
+)
+
+FILES: Array
+(
+)
+

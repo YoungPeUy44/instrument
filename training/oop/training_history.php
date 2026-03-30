@@ -60,10 +60,9 @@ $current_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '';
         </div>
         <!-- <a href="?act=manual_guide" class="btn btn-warning-custom">ย้อนกลับ</a> -->
 
-        <a href="?act=manual_guide" class="btn btn-warning-custom rounded-pill">
-            <i class="bi bi-arrow-left"></i> 
-            <span class="d-none d-md-inline ms-1">ย้อนกลับ</span>
-        </a>
+        <a href="<?= BASE_URL ?>?act=manual_guide" class="btn btn-outline-dark btn-sm rounded-pill">
+                <i class="bi bi-arrow-left"></i> กลับหน้าหลัก
+            </a>
     </div>
 
     <div class="card card-custom shadow-sm border-0">
@@ -190,6 +189,7 @@ $current_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '';
         });
     </script>
 <?php endif; ?>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= TRAIN_JS_URL ?>training_history.js?v=<?= time() ?>"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

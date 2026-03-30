@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // เลือก dropdown ทั้งหมดในหน้าจอ
     const dropdownElementList = document.querySelectorAll('.dropdown-toggle');
     
+    
     dropdownElementList.forEach(dropdownToggleEl => {
         new bootstrap.Dropdown(dropdownToggleEl, {
             // ⭐ บังคับให้เมนูจัดการลอยไปอยู่ที่ body เพื่อไม่ให้โดนตัดขอบตาราง
@@ -13,3 +14,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+

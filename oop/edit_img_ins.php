@@ -24,11 +24,11 @@ $ins_name = $current_ins['atm_model_name'] ?? 'instrument';
     </div>
 
     <div class="card-body p-3">
-        <!-- <form action="<?= BASE_URL ?>db/save_instrument.php" method="post" enctype="multipart/form-data"> -->
+       
             <!-- ⭐ จุดสำคัญ: ส่งโหมด upload เพื่อป้องกันข้อมูล Basic หาย -->
-            <input type="hidden" name="mode" value="upload">
+            <!-- <input type="hidden" name="mode" value="upload">
             <input type="hidden" name="ins_id" value="<?= $ins_id ?>">
-            <input type="hidden" name="name" value="<?= htmlspecialchars($ins_name) ?>">
+            <input type="hidden" name="name" value="<?= htmlspecialchars($ins_name) ?>"> -->
 
             <!-- 1. รูปหน้าปก (Cover Image) พร้อมระบบ Preview -->
             <div class="mb-3 p-2 border rounded bg-light">
@@ -91,11 +91,6 @@ $ins_name = $current_ins['atm_model_name'] ?? 'instrument';
                     <div class="small text-muted" style="font-size: 0.65rem;">ยังไม่มีรูปขั้นตอน Run</div>
                 <?php endif; ?>
             </div>
-
-            <!-- <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm">
-                <i class="bi bi-cloud-arrow-up-fill me-2"></i>อัปโหลดและบันทึกข้อมูล
-            </button> -->
-        <!-- </form> -->
     </div>
 </div>
 

@@ -1,23 +1,38 @@
 <?php
+// echo '<pre>';
+// print_r($_POST);
+// echo '<br>';
+// exit();
+
+
 /* db/save_instrument.php */
 session_start();
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../config/paths.php';
+$MAX_IMG_SIZE = 50 * 1024 * 1024;  // 5MB สำหรับรูปภาพ
+$MAX_FILE_SIZE = 10 * 1024 * 1024; // 20MB สำหรับไฟล์เอกสาร ZIP/RAR
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && isset($_SERVER['CONTENT_LENGTH'])) {
+    $size_bytes = $_SERVER['CONTENT_LENGTH'];
+    $size_mb = round($size_bytes / (1024 * 1024), 2); // แปลงเป็น MB
 
+    $referrer = $_SERVER['HTTP_REFERER'] ?? '../index.php';
+    // ส่งค่า size กลับไปด้วย
+    header("Location: " . $referrer . "&status=error_too_big&size=" . $size_mb);
+    exit;
+}
 $conn = db();
 $conn->set_charset('utf8mb4');
 
 // กำหนดขนาดไฟล์สูงสุด (Bytes)
-$MAX_IMG_SIZE = 8 * 1024 * 1024;  // 5MB สำหรับรูปภาพ
-$MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB สำหรับไฟล์เอกสาร ZIP/RAR
+
 
 /**
  * 1. ส่วนจัดการการลบไฟล์ (Delete Actions)
  */
 if (isset($_REQUEST['act'])) {
     $act = $_REQUEST['act'];
-    $id = (int)($_REQUEST['id'] ?? 0);
-    $ins_id = (int)($_REQUEST['ins_id'] ?? 0);
+    $id = (int) ($_REQUEST['id'] ?? 0);
+    $ins_id = (int) ($_REQUEST['ins_id'] ?? 0);
 
     if ($act === 'delete_file') {
         $stmt = $conn->prepare("SELECT file_name FROM instrument_determination WHERE deter_id = ?");
@@ -26,12 +41,14 @@ if (isset($_REQUEST['act'])) {
         $file = $stmt->get_result()->fetch_assoc();
         if ($file) {
             $fullPath = FILE_PATH . $file['file_name'];
-            if (file_exists($fullPath)) unlink($fullPath);
+            if (file_exists($fullPath))
+                unlink($fullPath);
             $delStmt = $conn->prepare("DELETE FROM instrument_determination WHERE deter_id = ?");
             $delStmt->bind_param("i", $id);
             $delStmt->execute();
         }
-        echo "OK"; exit();
+        echo "OK";
+        exit();
     }
 
     if ($act === 'delete_img') {
@@ -45,10 +62,12 @@ if (isset($_REQUEST['act'])) {
         $file = $stmt->get_result()->fetch_assoc();
         if ($file) {
             $fullPath = IMG_PATH . $file['file_name'];
-            if (file_exists($fullPath)) unlink($fullPath);
+            if (file_exists($fullPath))
+                unlink($fullPath);
             $conn->query("DELETE FROM $table WHERE $pk = $id");
         }
-        echo "OK"; exit();
+        echo "OK";
+        exit();
     }
 }
 
@@ -56,21 +75,24 @@ if (isset($_REQUEST['act'])) {
  * 2. ส่วนการประมวลผลข้อมูลผ่าน POST
  */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $ins_id = (int)($_POST['ins_id'] ?? 0);
-    $mode = $_POST['mode'] ?? 'basic'; 
+    $ins_id = (int) ($_POST['ins_id'] ?? 0);
+    $mode = $_POST['mode'] ?? 'basic';
 
     // ดึงชื่อ-นามสกุลจาก Session เพื่อบันทึกผู้แก้ไข (updated_by)
     $fname = $_SESSION['user_firstname'] ?? $_SESSION['User_Firstname'] ?? '';
     $lname = $_SESSION['user_lastname'] ?? $_SESSION['User_Lastname'] ?? '';
     $full_name = trim($fname . " " . $lname);
-    
+
+
+
+
     // หากไม่มีข้อมูลชื่อใน Session ให้บันทึกเป็น System
-    if (empty($full_name)) { 
-        $full_name = "System"; 
+    if (empty($full_name)) {
+        $full_name = "System";
     }
 
     // เตรียม SQL Update หลักสำหรับตาราง instruments
-    $updates = ["updated_at = NOW()", "updated_by = ?","live_event = NOW()"];
+    $updates = ["updated_at = NOW()", "updated_by = ?", "live_event = NOW()"];
     $params = [$full_name];
     $types = "s";
 
@@ -90,9 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
      */
     if ($mode === 'basic') {
         // --- โหมดแก้ไขข้อมูลพื้นฐาน ---
-        $status_manual_id = (int)($_POST['status_manual_id'] ?? 1);
-        $cable_type_id = (int)($_POST['cable_type_id'] ?? 0);
+        $status_manual_id = (int) ($_POST['status_selector'] ?? 1);
+        $cable_type_id = (int) ($_POST['cable_type_id'] ?? 0);
         $config_text = $_POST['config_text'] ?? '';
+
 
         array_push($updates, "cable_type_id = ?", "config_text = ?");
         array_push($params, $cable_type_id, $config_text);
@@ -104,29 +127,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt_status->execute();
 
     } else if ($mode === 'upload') {
-    // ตรวจสอบไฟล์หน้าปก (Equipment Image)
-    if (isset($_FILES['equipment_image']) && $_FILES['equipment_image']['error'] === UPLOAD_ERR_OK) {
-        $file = $_FILES['equipment_image'];
-        
-        // เช็คขนาดไฟล์ (MAX_IMG_SIZE = 5MB)
-        if ($file['size'] > $MAX_IMG_SIZE) {
-            header("Location: " . BASE_URL . "?act=edit&id=$ins_id&mode=$mode&status=error_size");
-            exit();
+        // ตรวจสอบไฟล์หน้าปก (Equipment Image)
+        if (isset($_FILES['equipment_image']) && $_FILES['equipment_image']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['equipment_image'];
+
+            // เช็คขนาดไฟล์ (MAX_IMG_SIZE = 5MB)
+            if ($file['size'] > $MAX_IMG_SIZE) {
+                header("Location: " . BASE_URL . "?act=edit&id=$ins_id&mode=$mode&status=error_size");
+                exit();
+            }
+
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            // แนะนำให้เพิ่ม uniqid() เพื่อไม่ให้ชื่อไฟล์ซ้ำกันจน Browser ไม่อัปเดตรูปหน้าเว็บ
+            $eq_img_name = $base_name . '_main_' . substr(uniqid(), -5) . '.' . $ext;
+
+            if (!is_dir(IMG_PATH))
+                mkdir(IMG_PATH, 0755, true);
+
+            if (move_uploaded_file($file['tmp_name'], IMG_PATH . $eq_img_name)) {
+                // สำคัญ: เพิ่มเข้าไปในรายการ Update ของตาราง instruments
+                $updates[] = "equipment_image = ?";
+                $params[] = $eq_img_name;
+                $types .= "s";
+            }
         }
-
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        // แนะนำให้เพิ่ม uniqid() เพื่อไม่ให้ชื่อไฟล์ซ้ำกันจน Browser ไม่อัปเดตรูปหน้าเว็บ
-        $eq_img_name = $base_name . '_main_' . substr(uniqid(), -5) . '.' . $ext;
-
-        if (!is_dir(IMG_PATH)) mkdir(IMG_PATH, 0755, true);
-
-        if (move_uploaded_file($file['tmp_name'], IMG_PATH . $eq_img_name)) {
-            // สำคัญ: เพิ่มเข้าไปในรายการ Update ของตาราง instruments
-            $updates[] = "equipment_image = ?";
-            $params[] = $eq_img_name; 
-            $types .= "s";
-        }
-    }
 
         if (!empty($_FILES['setup_images']['name'][0])) {
             uploadCustomFiles($_FILES['setup_images'], IMG_PATH, $conn, $ins_id, 'instrument_setup_images', $base_name . '_002', $MAX_IMG_SIZE, BASE_URL, $mode);
@@ -148,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "UPDATE instruments SET " . implode(', ', $updates) . " WHERE ins_id = ?";
         $params[] = $ins_id;
         $types .= "i";
-        
+
         $stmt = $conn->prepare($sql);
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
@@ -161,9 +185,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /**
  * 5. ฟังก์ชันช่วยจัดการการอัปโหลดไฟล์
  */
-function uploadCustomFiles($fileInput, $targetPath, $conn, $insId, $tableName, $filePrefix, $maxSize, $baseUrl, $mode) {
-    if (empty($fileInput['name'][0])) return;
-    if (!is_dir($targetPath)) mkdir($targetPath, 0755, true);
+function uploadCustomFiles($fileInput, $targetPath, $conn, $insId, $tableName, $filePrefix, $maxSize, $baseUrl, $mode)
+{
+    if (empty($fileInput['name'][0]))
+        return;
+    if (!is_dir($targetPath))
+        mkdir($targetPath, 0755, true);
 
     foreach ($fileInput['name'] as $key => $val) {
         if ($fileInput['error'][$key] === UPLOAD_ERR_OK) {

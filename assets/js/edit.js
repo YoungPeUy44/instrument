@@ -1,3 +1,4 @@
+
 // -------- พรีวิวภาพหน้าปก --------
 const fileInput = document.getElementById('equipmentImage');
 if (fileInput) {
@@ -96,5 +97,3 @@ async function saveOrder(listEl) {
     alert('❌ เชื่อมต่อไม่ได้: ' + err.message);
   }
 }
-
-
