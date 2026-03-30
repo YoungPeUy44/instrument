@@ -35,6 +35,7 @@ $sql = "SELECT
 $res = $db->query($sql);
 $user_level = isset($_SESSION['user_instrument']) ? (int)$_SESSION['user_instrument'] : 0;
 $current_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '';
+$user_dept = isset($_SESSION['user_department']) ? $_SESSION['user_department'] : '';
 ?>
 <!doctype html>
 <html lang="th">
@@ -81,7 +82,7 @@ $current_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '';
                     <tbody>
                         <?php if ($res && $res->num_rows > 0): ?>
                             <?php while($row = $res->fetch_assoc()): ?>
-                                <tr onclick='showDetail(<?= json_encode($row, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>, <?= $user_level ?>, "<?= $current_user_id ?>")' style="cursor: pointer;">
+                                <tr onclick='showDetail(<?= htmlspecialchars(json_encode($row), ENT_QUOTES, "UTF-8") ?>, <?= (int)$user_level ?>, "<?= $current_user_id ?>", "<?= $user_dept ?>")' style="cursor: pointer;">
                                     <td>
                                         <div class="fw-bold text-dark"><?= htmlspecialchars($row['training_topic']) ?></div>
                                         <div class="text-muted small">

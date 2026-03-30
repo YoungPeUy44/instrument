@@ -15,6 +15,9 @@ if (defined('APP_ENV') && APP_ENV === 'local' && !isset($_SESSION['user_instrume
     // ✅ เพิ่มการเซต user_id เป็น 3 เพื่อให้เงื่อนไขปุ่มลบ (ID=3) ทำงานได้ในเครื่อง Local
     $_SESSION['user_id'] = "3"; 
     
+    // $_SESSION['user_department'] = "instrument";
+    $_SESSION['user_department'] = "executive";
+
     // (Optional) เซตชื่อเพื่อใช้โชว์ในระบบ
     $_SESSION['user_firstname'] = "Young";
     $_SESSION['user_lastname'] = "PeUy";
@@ -25,7 +28,12 @@ function checkLevel($level) {
     return isset($_SESSION['user_instrument']) && (int)$_SESSION['user_instrument'] >= $level;
 }
 
-// --- ✅ เพิ่มฟังก์ชันเช็ค ID เฉพาะตัว (ถ้าต้องการใช้งานบ่อยๆ) ---
+// --- ✅ ฟังก์ชันเช็คว่าเป็นแผนกเครื่องตรวจหรือไม่ ---
+function isInstrument() {
+    return isset($_SESSION['user_department']) && $_SESSION['user_department'] === 'instrument';
+}
+
+// --- ฟังก์ชันเช็ค ID เฉพาะตัว ---
 function isMe() {
     return isset($_SESSION['user_id']) && (string)$_SESSION['user_id'] === "3";
 }

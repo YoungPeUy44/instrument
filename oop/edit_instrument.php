@@ -122,13 +122,12 @@ if ($ins_id > 0 && !$item) {
                         </div>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <small class="text-muted d-block mb-1 fw-bold text-uppercase" style="font-size: 0.7rem;">สถานะปัจจุบัน</small>
                         <div class="btn-group shadow-sm" role="group">
-                            <input type="radio" class="btn-check" name="status_selector" id="status_ready" value="1" 
+                            <!-- <input type="radio" class="btn-check" name="status_selector" id="status_ready" value="1" 
                                 <?= ($item['ref_atm_status_manual_id'] == 1) ? 'checked' : '' ?>>
                                 <label class="btn btn-outline-success btn-sm px-2 py-1 fw-bold"
                                         for="status_ready"
-                                        onclick="confirmStatusChange(this, 1, 'พร้อม', 'success')">พร้อม</label>
+                                        onclick="confirmStatusChange(this, 1, 'พร้อม', 'success')">พร้อม</label> -->
 
                             <input type="radio" class="btn-check" name="status_selector" id="status_training" value="3" 
                                 <?= ($item['ref_atm_status_manual_id'] == 3) ? 'checked' : '' ?>>

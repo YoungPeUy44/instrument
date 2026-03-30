@@ -5,8 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // 1. ดึงระบบ Auto-Login สำหรับ Local (ถ้ามีไฟล์แยกให้ require มา)
-// require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php'; //local
-$permission_path = __DIR__ . '/../config/permission.php'; //proguction
+require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php'; //local
+// $permission_path = __DIR__ . '/../config/permission.php'; //proguction
 
 // 2. เช็คสิทธิ์: ถ้าไม่มี Session หรือ สิทธิ์น้อยกว่า 1 (สิทธิ์ 0) ให้ดีดออก
 if (!isset($_SESSION['user_instrument']) || (int)$_SESSION['user_instrument'] < 1) { 
@@ -35,7 +35,7 @@ if (!isset($_SESSION['user_instrument']) || (int)$_SESSION['user_instrument'] < 
 
 <?php
 
-// var_dump($_SESSION);
+var_dump($_SESSION);
 $ins_id = (int)($_GET['id'] ?? 0);
 // require_once __DIR__ . '/../config/permission.php';
 // if (!isset($_SESSION['user_instrument']) || $_SESSION['user_instrument'] < "1") { 

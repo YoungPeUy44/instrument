@@ -1,15 +1,15 @@
 /* training/assets/js/training_history.js */
 
-function showDetail(data, userLevel, currentUserId) {
+function showDetail(data, userLevel, currentUserId, userDept) {
     const modalContent = document.getElementById('modalContent');
-    const cancelBtnArea = document.getElementById('cancelBtnArea');
+    const cancelBtnArea = document.getElementById('cancelBtnArea'); // 🚩 ต้องใช้ ID นี้ให้ตรงกับใน PHP
     
     const startDate = new Date(data.training_start);
     const endDate = new Date(data.training_end);
     const createdAt = new Date(data.created_at);
     const instruments = data.instruments ? data.instruments.split(', ') : [];
     
-    // 1. สถานะ Badge (ไม่เช็คเวลาแล้ว)
+    // ✅ 1. เปิดใช้งานสถานะ Badge (ห้ามคอมเมนต์ทิ้ง)
     let statusHtml = '';
     const st = parseInt(data.training_status);
     if (st === 1) {
@@ -24,7 +24,7 @@ function showDetail(data, userLevel, currentUserId) {
         <div class="row g-4">
             <div class="col-md-7">
                 <div class="detail-label text-muted small">หัวข้อการเทรน</div>
-                <div class="detail-value fw-bold fs-5 text-dark">${escapeHtml(data.training_topic)}</div>
+                <div class="detail-value fw-bold fs-5 text-dark">${escapeHtml(data.training_topic)}</div>    
             </div>
             
             <div class="col-md-5 text-end">
@@ -44,7 +44,7 @@ function showDetail(data, userLevel, currentUserId) {
                 </div>
             </div>
             <div class="col-md-5">
-                <div class="detail-label">สถานที่</div>
+                <div class="detail-label text-muted small">สถานที่</div>
                 <div class="detail-value">
                     <i class="bi bi-geo-alt-fill text-danger me-1"></i>
                     ${escapeHtml(data.training_location || '-')}
@@ -64,7 +64,7 @@ function showDetail(data, userLevel, currentUserId) {
                 <i class="bi bi-person-fill"></i> ผู้นัดหมาย : ${escapeHtml(data.created_by)} | 
                 วันที่บันทึก: ${createdAt.toLocaleString('th-TH')}
             </div>
-            ${(st === 2 && data.cancel_by && data.cancel_by.trim() !== '') ? `
+            ${(st === 2 && data.cancel_by) ? `
             <div class="col-12 small text-muted mt-1">
                 <i class="bi bi-x-circle-fill"></i> ผู้ยกเลิก : ${escapeHtml(data.cancel_by)} | 
                 วันที่ยกเลิก: ${data.cancel_at ? new Date(data.cancel_at).toLocaleString('th-TH') : '-'}
@@ -73,21 +73,23 @@ function showDetail(data, userLevel, currentUserId) {
         </div>
     `;
 
-    // 3. จัดการปุ่ม
+    // ✅ 2. จัดการปุ่ม (ใส่ลงใน cancelBtnArea)
     let buttonsHtml = '';
-                // ซ่อนปุ่มลบ
+    
+    // ปุ่มลบประวัติ (Level 3 + ID 3)
     if (parseInt(userLevel) >= 3 && String(currentUserId) === "3") {
         buttonsHtml += `
-            <button type="button" class="btn btn-outline-danger rounded-pill px-4 me-auto" onclick="confirmDelete(${data.training_id})">
-                <i class="bi bi-trash-fill"></i> ลบประวัติ
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-2 lh-1 hover-scale" 
+                    onclick="confirmDelete(${data.training_id})" 
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="ลบประวัติถาวร">
+                <i class="bi bi-trash3-fill fs-5"></i>
             </button>
         `;
     }
 
-    // ปุ่มยืนยัน และ ยกเลิก: แสดงถ้าสถานะยังเป็น 0
     if (st === 0) {
-        // ✅ ปรับเงื่อนไขให้ Level 1 ขึ้นไปกดยืนยันได้
-        if (userLevel >= 1) {
+        // แผนกอื่นกดยืนยันได้ แต่ instrument ห้ามกด
+        if (parseInt(userLevel) >= 1 && userDept !== 'instrument') {
             buttonsHtml += `
                 <button type="button" class="btn btn-success rounded-pill px-4 me-2" onclick="confirmFinishInModal(${data.training_id}, '${data.ins_id_list}')">
                     ยืนยันเสร็จสิ้น
@@ -95,20 +97,26 @@ function showDetail(data, userLevel, currentUserId) {
             `;
         }
         
-        // ปุ่มยกเลิกนัด (ถ้าต้องการให้สิทธิ์ 1 ยกเลิกได้ด้วย)
+        // เฉพาะแผนก instrument เท่านั้นที่เห็นปุ่มยกเลิก
         if (userDept === 'instrument') {
-        buttonsHtml += `
-            <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmCancel(${data.training_id})">
-                ยกเลิกนัดเทรน
-            </button>
-        `;
+            buttonsHtml += `
+                <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmCancel(${data.training_id})">
+                    ยกเลิกนัดเทรน
+                </button>
+            `;
         }
     }
+    
+    // ปุ่มปิดมาตรฐาน
+    // buttonsHtml += `<button type="button" class="btn btn-secondary rounded-pill px-4 ms-2" data-bs-dismiss="modal">ปิด</button>`;
+    
+    if (cancelBtnArea) {
+        cancelBtnArea.innerHTML = buttonsHtml;
+    }
 
-
-
-    cancelBtnArea.innerHTML = buttonsHtml;
-    new bootstrap.Modal(document.getElementById('detailModal')).show();
+    // ✅ 3. สั่งเปิด Modal (ตรวจสอบ ID ให้ตรงกับใน PHP บรรทัดที่ 140)
+    const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+    detailModal.show();
 }
 
 function confirmFinishInModal(trainingId, insIds) {
