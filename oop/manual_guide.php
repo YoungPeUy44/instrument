@@ -1,9 +1,5 @@
 <?php
-
-if (session_status() === PHP_SESSION_NONE) {
     session_start();
-}
-
 // 1. ดึงระบบ Auto-Login สำหรับ Local (ถ้ามีไฟล์แยกให้ require มา)
 require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php'; //local
 // $permission_path = __DIR__ . '/../config/permission.php'; //proguction
@@ -35,29 +31,7 @@ if (!isset($_SESSION['user_instrument']) || (int)$_SESSION['user_instrument'] < 
 
 <?php
 
-var_dump($_SESSION);
-$ins_id = (int)($_GET['id'] ?? 0);
-// require_once __DIR__ . '/../config/permission.php';
-// if (!isset($_SESSION['user_instrument']) || $_SESSION['user_instrument'] < "1") { 
-//     echo "
-//     <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-//     <script>
-//         document.addEventListener('DOMContentLoaded', function() {
-//             Swal.fire({
-//                 icon: 'error',
-//                 title: 'จำกัดการเข้าถึง!',
-//                 text: 'คุณไม่มีสิทธิ์ดำเนินการในส่วนนี้ กรุณาติดต่อผู้ดูแลระบบ',
-//                 confirmButtonText: 'ตกลง',
-//                 confirmButtonColor: '#d33',
-//             }).then((result) => {
-//                 if (result.isConfirmed) {
-//                     window.location.href = '../';
-//                 }
-//             });
-//         });
-//     </script>";
-//     exit; 
-// }
+// var_dump($_SESSION);
 
 require_once __DIR__ . '/../config/paths.php';
 require_once __DIR__ . '/../db/db.php';
@@ -209,7 +183,7 @@ $result = $stmt->get_result();
         <div class="col-12 col-md-5">
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" name="kw" class="form-control border-start-0" 
+                <input type="text" id="liveSearch" name="kw" class="form-control border-start-0" 
                        placeholder="ค้นหาชื่อเครื่องตรวจ..." value="<?= htmlspecialchars($kw) ?>">
             </div>
         </div>
@@ -459,7 +433,30 @@ $result = $stmt->get_result();
   </div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // ค้นหา
+    $("#liveSearch").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    var rowCount = 0;
+
+    $(".table-custom tbody tr").filter(function() {
+        var match = $(this).text().toLowerCase().indexOf(value) > -1;
+        $(this).toggle(match);
+        if(match) rowCount++;
+    });
+
+    // ถ้าไม่เจอเลย ให้แสดงแถวพิเศษ (ถ้ายังไม่มี)
+    if(rowCount === 0) {
+        if($("#no-results").length === 0) {
+            $(".table-custom tbody").append('<tr id="no-results"><td colspan="10" class="text-center py-4 text-muted">ไม่พบข้อมูลที่ค้นหา</td></tr>');
+        }
+    } else {
+        $("#no-results").remove();
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // 1. จัดการ Error Script จาก PHP
     <?php if (isset($error_script)) echo $error_script; ?>
@@ -468,16 +465,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
 
+    console.log("Status from URL:", status); // 🚩 ลองเปิด Console (F12) ดูว่าค่ามาไหม
+
     if (status) {
         let title = '';
         let icon = 'success';
 
-        // รองรับหลายสถานะในชุดเดียว
+        // ปรับ Switch Case ให้ครอบคลุม
         switch(status) {
-            case 'cancel_success': title = 'ยกเลิกนัดเทรนเรียบร้อย'; break;
-            // case 'train_success':  title = 'บันทึกการเทรนสำเร็จ'; break;
-            case 'delete_success': title = 'ลบข้อมูลเรียบร้อย'; break;
-            // case 'no_permission':  title = 'คุณไม่มีสิทธิ์เข้าถึงหน้าจอี้'; icon = 'error'; break;
+            case 'cancel_success': 
+                title = 'ยกเลิกนัดเทรนเรียบร้อย'; 
+                break;
+            case 'delete_success': 
+                title = 'ลบข้อมูลเรียบร้อย'; 
+                break;
+            case 'update_success': // เผื่อไว้สำหรับบันทึกสำเร็จ
+                title = 'บันทึกข้อมูลสำเร็จ'; 
+                break;
+            case 'error': 
+                title = 'เกิดข้อผิดพลาด'; 
+                icon = 'error'; 
+                break;
         }
 
         if (title) {
@@ -487,19 +495,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 2000,
-                timerProgressBar: true
+                timer: 3000, // เพิ่มเป็น 3 วิให้ User เห็นชัดๆ
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
             });
 
-            // ✅ ล้าง URL ทันทีหลังจากสั่งโชว์ Swal (ไม่ต้องรอจบ Timer)
-            let url = new URL(window.location.href);
-            url.searchParams.delete('status');
-            window.history.replaceState({}, '', url);
+            // ✅ ล้าง Parameter 'status' ออกจาก URL โดยยังรักษา 'act' ไว้
+            const url = new URL(window.location.href);
+            if (url.searchParams.has('status')) {
+                url.searchParams.delete('status');
+                // ใช้ replaceState เพื่อไม่ให้กด Back แล้วเจอ Swal ซ้ำ
+                window.history.replaceState(null, '', url.pathname + url.search);
+            }
         }
     }
 });
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="<?= BASE_URL ?>assets/js/manual_guide.js"></script>
 </body>

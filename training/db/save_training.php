@@ -1,18 +1,26 @@
 <?php
 /* db/save_training.php - แก้ไขการรับค่า created_by */
-session_start();
-// echo '<pre>';
-// print_r($_POST);
-// echo '<br>';
-// exit();
+// save ส่งฟอร์ม redirect ไปหน้า History
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+session_start();
+ob_start();
+// echo '<pre>';
+// print_r($_POST);
+// echo '<br>';
+// exit();
+// echo '<pre>--- Check POST Data ---<br>';
+// print_r($_POST); 
+// echo '</pre>';
+// exit();
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../config/paths.php';
 
 $conn = db();
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $topic = trim($_POST['training_topic'] ?? '');
@@ -114,11 +122,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $row_name = $res_name->fetch_assoc();
             $ins_name = $row_name['atm_model_name'] ?? 'ไม่ทราบชื่อ';
 
+            $sql_update_model = "UPDATE automate_model 
+                         SET inst_training_topic = ?, 
+                             inst_training_location = ?, 
+                             inst_training_start = ?, 
+                             inst_training_end = ?,
+                             inst_training_status = 0, 
+                             ref_atm_status_manual_id = 3 
+                         WHERE atm_model_id = ?";
+
+            // 2. Prepare statement
+            $stmt_model = $conn->prepare($sql_update_model);
+
+            // 3. ตรวจสอบว่า Prepare สำเร็จไหมก่อนจะ Bind (ช่วย Debug ได้ดี)
+            if ($stmt_model) {
+                // ต้องมี 5 ตัวแปรให้ตรงกับเครื่องหมาย ? ใน SQL ด้านบน
+                $stmt_model->bind_param("ssssi", $topic, $location, $start_mysql, $end_mysql, $ins_id);
+                $stmt_model->execute();
+            } else {
+                // ถ้ามันเข้าตรงนี้ แสดงว่า SQL บรรทัดบนมีชื่อคอลัมน์ผิด
+                throw new Exception("SQL Prepare failed: " . $conn->error);
+            }
+
             // เก็บเข้า Array เพื่อใส่ใน Payload
             $instrument_list[] = [
                 'id' => $ins_id,
                 'name' => $ins_name
             ];
+
 
             $success_count++;
             
@@ -132,6 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // --- ส่วน Payload สำหรับส่งแจ้งเตือน ---
         $line_payload = [
+            'tid'           => (int)$training_id,
             'topic'       => $topic,
             'location'    => $location,
             'start'       => $start_mysql,
@@ -141,14 +173,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'created_by'  => $created_by
         ];
 
+
+        // echo '<pre>'; print_r($line_payload); echo '</pre>'; exit;
+
                 // ===============================
         // ||       NOTIFY TYPE         ||
         // ===============================
         // $notify_type = 'debug';
-        $notify_type = 'train';
-        include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
+        // $notify_type = 'train';
+        // include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
         
-        header("Location: " . BASE_URL . "?act=training_history&status=train_success");
+        header("Location: " . BASE_URL . "?act=training_history&status=order_success");
         exit;
         
     } catch (Exception $e) {

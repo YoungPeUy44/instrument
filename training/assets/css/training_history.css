@@ -5,8 +5,8 @@
 }
 body {
     background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-    min-height: 100vh;
-    padding: 2rem 0;
+    /* min-height: 100vh;
+    padding: 2rem 0; */
 }
 .card-custom {
     border: none;
@@ -251,3 +251,4 @@ tr.status-cancelled {
     border-top-left-radius: calc(1rem - 1px) !important;
     border-top-right-radius: calc(1rem - 1px) !important;
 }
+

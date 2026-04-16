@@ -115,7 +115,7 @@ function confirmCancel(id) {
         cancelButtonText: 'กลับ'
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = `index.php?act=update_training_status&id=${id}&status=2`;
+            window.location.href = `?act=update_training_status&id=${id}&status=2`;
         }
     });
 }

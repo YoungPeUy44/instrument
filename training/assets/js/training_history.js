@@ -1,140 +1,75 @@
 /* training/assets/js/training_history.js */
 
-function showDetail(data, userLevel, currentUserId, userDept) {
-    const modalContent = document.getElementById('modalContent');
-    const cancelBtnArea = document.getElementById('cancelBtnArea'); // 🚩 ต้องใช้ ID นี้ให้ตรงกับใน PHP
+/**
+ * ฟังก์ชันหลักสำหรับดึงข้อมูลรายละเอียดมาโชว์
+ * @param {number} trainingId - ไอดีของการเทรน
+ */
+function showDetail(trainingId) {
+    // 1. ตรวจสอบ jQuery และพื้นที่วางข้อมูล
+    // เราใช้ id="dynamic_modal_content" ตามโครงสร้าง Modal ใหม่ที่เราคุยกัน
+    const container = $('#dynamic_modal_content');
     
-    const startDate = new Date(data.training_start);
-    const endDate = new Date(data.training_end);
-    const createdAt = new Date(data.created_at);
-    const instruments = data.instruments ? data.instruments.split(', ') : [];
-    
-    // ✅ 1. เปิดใช้งานสถานะ Badge (ห้ามคอมเมนต์ทิ้ง)
-    let statusHtml = '';
-    const st = parseInt(data.training_status);
-    if (st === 1) {
-        statusHtml = '<span class="badge rounded-pill bg-success px-3 py-2 text-white">เสร็จสิ้น</span>';
-    } else if (st === 2) {
-        statusHtml = '<span class="badge rounded-pill bg-secondary px-3 py-2 text-white">ยกเลิก</span>';
-    } else {
-        statusHtml = '<span class="badge rounded-pill bg-warning px-3 py-2 text-dark">กำลังดำเนินการ</span>';
+    if (container.length === 0) {
+        console.error("หาพื้นที่ id='dynamic_modal_content' ไม่เจอ");
+        return;
     }
 
-    modalContent.innerHTML = `
-        <div class="row g-4">
-            <div class="col-md-7">
-                <div class="detail-label text-muted small">หัวข้อการเทรน</div>
-                <div class="detail-value fw-bold fs-5 text-dark">${escapeHtml(data.training_topic)}</div>    
-            </div>
-            
-            <div class="col-md-5 text-end">
-                <div class="detail-label text-muted small">สถานะ</div>
-                <div class="mt-1">${statusHtml}</div>
-            </div>
-            <div class="col-md-6">
-                <div class="detail-label text-muted small">วัน-เวลาเริ่มต้น</div>
-                <div class="detail-value border p-2 rounded-3 bg-white text-dark">
-                    ${startDate.toLocaleDateString('th-TH')} ${startDate.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})} น.
-                </div>
-            </div>
-            <div class="col-sm-6">
-                <div class="detail-label text-muted small">วัน-เวลาสิ้นสุด</div>
-                <div class="detail-value border p-2 rounded-3 bg-white text-dark">
-                    ${endDate.toLocaleDateString('th-TH')} ${endDate.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})} น.
-                </div>
-            </div>
-            <div class="col-md-5">
-                <div class="detail-label text-muted small">สถานที่</div>
-                <div class="detail-value">
-                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                    ${escapeHtml(data.training_location || '-')}
-                </div>
-            </div>
-            <div class="col-12">
-                <div class="detail-label text-muted small">เครื่องตรวจที่นัดเทรน</div>
-                <div class="d-flex flex-wrap gap-1 mt-1">
-                    ${instruments.map(ins => `<span class="badge-instrument">${escapeHtml(ins)}</span>`).join('')}
-                </div>
-            </div>
-            <div class="col-12 p-3 bg-light rounded-3">
-                <div class="detail-label text-muted small">รายละเอียดเพิ่มเติม</div>
-                <div class="text-dark">${escapeHtml(data.training_detail || '- ไม่มีรายละเอียด -')}</div>
-            </div>
-            <div class="col-12 small text-muted">
-                <i class="bi bi-person-fill"></i> ผู้นัดหมาย : ${escapeHtml(data.created_by)} | 
-                วันที่บันทึก: ${createdAt.toLocaleString('th-TH')}
-            </div>
-            ${(st === 2 && data.cancel_by) ? `
-            <div class="col-12 small text-muted mt-1">
-                <i class="bi bi-x-circle-fill"></i> ผู้ยกเลิก : ${escapeHtml(data.cancel_by)} | 
-                วันที่ยกเลิก: ${data.cancel_at ? new Date(data.cancel_at).toLocaleString('th-TH') : '-'}
-            </div>
-            ` : ''}
+    // 2. แสดง Loader ให้ผู้ใช้รู้ว่ากำลังโหลด
+    container.html(`
+        <div class="text-center p-5">
+            <div class="spinner-border text-warning" role="status"></div>
+            <p class="mt-2 text-muted">กำลังดึงข้อมูลรายละเอียด...</p>
         </div>
-    `;
-
-    // ✅ 2. จัดการปุ่ม (ใส่ลงใน cancelBtnArea)
-    let buttonsHtml = '';
+    `);
     
-    // ปุ่มลบประวัติ (Level 3 + ID 3)
-    if (parseInt(userLevel) >= 3 && String(currentUserId) === "3") {
-        buttonsHtml += `
-            <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-2 lh-1 hover-scale" 
-                    onclick="confirmDelete(${data.training_id})" 
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="ลบประวัติถาวร">
-                <i class="bi bi-trash3-fill fs-5"></i>
-            </button>
-        `;
+    // 3. สั่งเปิด Modal รอไว้เลย
+    const modalElement = document.getElementById('detailModal');
+    if (modalElement) {
+        const myModal = new bootstrap.Modal(modalElement);
+        myModal.show();
     }
 
-    if (st === 0) {
-        // แผนกอื่นกดยืนยันได้ แต่ instrument ห้ามกด
-        if (parseInt(userLevel) >= 1 && userDept !== 'instrument') {
-            buttonsHtml += `
-                <button type="button" class="btn btn-success rounded-pill px-4 me-2" onclick="confirmFinishInModal(${data.training_id}, '${data.ins_id_list}')">
-                    ยืนยันเสร็จสิ้น
-                </button>
-            `;
-        }
-        
-        // เฉพาะแผนก instrument เท่านั้นที่เห็นปุ่มยกเลิก
-        if (userDept === 'instrument') {
-            buttonsHtml += `
-                <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmCancel(${data.training_id})">
-                    ยกเลิกนัดเทรน
-                </button>
-            `;
-        }
+    // 4. ดึงข้อมูลจากไฟล์แยกผ่านระบบ act
+    // ส่ง mode=modal ไปด้วยเพื่อให้ไฟล์ปลายทางรู้ว่า "ไม่ต้องโชว์ปุ่มยืนยัน"
+    $.ajax({
+    // url: 'index.php', // ส่งกลับไปที่หน้าหลักเพื่อให้ Controller จัดการ
+    url: '/xct/instrument/index.php',
+    type: 'GET',
+    data: { 
+        act: 'update_training_detail', // ต้องตรงกับ act ใน URL ที่คุณส่งมาให้ผม
+        training_id: trainingId,
+        mode: 'modal' 
+    },
+    success: function(response) {
+        // นำข้อมูลที่ได้ (ซึ่งคือ HTML จาก training_history_detail.php) ไปวาง
+        $('#dynamic_modal_content').html(response);
+    },
+    error: function() {
+        $('#dynamic_modal_content').html('<div class="p-5 text-center text-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>');
     }
-    
-    // ปุ่มปิดมาตรฐาน
-    // buttonsHtml += `<button type="button" class="btn btn-secondary rounded-pill px-4 ms-2" data-bs-dismiss="modal">ปิด</button>`;
-    
-    if (cancelBtnArea) {
-        cancelBtnArea.innerHTML = buttonsHtml;
-    }
-
-    // ✅ 3. สั่งเปิด Modal (ตรวจสอบ ID ให้ตรงกับใน PHP บรรทัดที่ 140)
-    const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
-    detailModal.show();
+});
 }
 
-function confirmFinishInModal(trainingId, insIds) {
+/** * ฟังก์ชันยืนยันเสร็จสิ้น 
+ * (ใช้ร่วมกันทั้งหน้า Full Page และไฟล์ Model)
+ */
+function confirmFinishInModal(training_id, ins_ids) {
     Swal.fire({
-        title: 'ยืนยันบันทึกผลการเทรน?',
+        title: 'ยืนยันบันทึกผลการอบรบ',
         text: "ระบบจะปรับสถานะเครื่องตรวจเป็น 'พร้อม' ทั้งหมด",
-        icon: 'warning',
+        icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#198754',
         confirmButtonText: 'ตกลง',
         cancelButtonText: 'กลับ'
     }).then((result) => {
         if (result.isConfirmed) {
-           window.location.href = `?act=update_training_complete&training_id=${trainingId}&ins_ids=${insIds}`;
+           window.location.href = `?act=update_training_complete&training_id=${training_id}&ins_ids=${ins_ids}`;
         }
     });
 }
 
+/** ฟังก์ชันลบประวัติ */
 function confirmDelete(id) {
     Swal.fire({
         title: 'ลบประวัติถาวร?',
@@ -150,6 +85,7 @@ function confirmDelete(id) {
     });
 }
 
+/** ฟังก์ชันยกเลิกนัด */
 function confirmCancel(id) {
     Swal.fire({
         title: 'ยกเลิกนัดหมายนี้?',
@@ -164,10 +100,31 @@ function confirmCancel(id) {
         }
     });
 }
+//เด้งเตือนนัดหมายเทรนสำเร็จ
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. ดึง Status จาก URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+    // 2. ตรวจสอบเงื่อนไข status=order_success เท่านั้น
+    if (status === 'order_success') {
+        Swal.fire({
+            icon: 'success',
+            title: 'นัดหมายสำเร็จ', // หรือข้อความที่นายต้องการ
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        // ✅ ล้าง Parameter 'status' ออกจาก URL ทันทีเพื่อให้ URL สวยงามและไม่เด้งซ้ำ
+        const url = new URL(window.location.href);
+        url.searchParams.delete('status');
+        window.history.replaceState(null, '', url.pathname + url.search);
+    }
+});

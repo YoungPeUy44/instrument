@@ -10,7 +10,7 @@ require_once __DIR__ . '/env.php';
 
 if (defined('APP_ENV') && APP_ENV === 'local' && !isset($_SESSION['user_instrument'])) {
     // เซตสิทธิ์การใช้งาน (Level)
-    $_SESSION['user_instrument'] = "3"; 
+    $_SESSION['user_instrument'] = "2"; 
     
     // ✅ เพิ่มการเซต user_id เป็น 3 เพื่อให้เงื่อนไขปุ่มลบ (ID=3) ทำงานได้ในเครื่อง Local
     $_SESSION['user_id'] = "3"; 

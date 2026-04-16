@@ -61,10 +61,10 @@ $det   = $conn->query("SELECT * FROM instrument_determination WHERE instrument_i
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0 fw-bold text-dark">
             <i class="bi bi-display me-2 text-primary"></i><?= htmlspecialchars($item['name']) ?>
-        </h4>
-        <a href="<?= BASE_URL ?>?act=manual_guide" class="btn btn-outline-dark btn-sm rounded-pill">
+        </h4>      
+            <button type="button" class="btn btn-outline-dark btn-sm rounded-pill" onclick="history.back();">
                 <i class="bi bi-arrow-left"></i> กลับหน้าหลัก
-            </a>
+            </button>
     </div>
 
     <div class="card mb-4 shadow-sm border-0 rounded-3">

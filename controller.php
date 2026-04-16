@@ -57,6 +57,10 @@ switch ($act) {
         require __DIR__ . '/training/db/update_training_complete.php';
         break;
 
+    case 'update_training_detail':
+        require __DIR__ . '/training/oop/training_history_detail.php';
+        break;
+
     default:
         require __DIR__ . '/oop/error404.php';
 }

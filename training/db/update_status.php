@@ -1,5 +1,6 @@
 <?php
 /* xct\alt\instrument\training\db\update_status.php */
+// save สถานะ ยิกเลิกนัดเทรน redirect ไปหน้า manual
 session_start();
 ob_start();
 
@@ -12,10 +13,10 @@ if (!function_exists('db')) {
 require_once __DIR__ . '/../config/paths.php';
 $conn = db();
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$training_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $status = isset($_GET['status']) ? (int)$_GET['status'] : 2; // 2 = ยกเลิก
 
-if ($id > 0) {
+if ($training_id  > 0) {
     // --- เริ่มการดึงข้อมูลเพื่อสร้าง Payload (ล้อตาม save_training) ---
     $instrument_list = [];
     $topic = $location = $start_mysql = $end_mysql = $detail = "";
@@ -23,7 +24,7 @@ if ($id > 0) {
     // 1. ดึงข้อมูลหลักของการเทรน
     $sql_info = "SELECT * FROM instrument_training WHERE training_id = ?";
     $stmt_info = $conn->prepare($sql_info);
-    $stmt_info->bind_param("i", $id);
+    $stmt_info->bind_param("i", $training_id);
     $stmt_info->execute();
     $res_info = $stmt_info->get_result();
     $data = $res_info->fetch_assoc();
@@ -42,7 +43,7 @@ if ($id > 0) {
                     JOIN automate_model m ON ti.instrument_id = m.atm_model_id
                     WHERE ti.training_id = ?";
         $stmt_ins = $conn->prepare($sql_ins);
-        $stmt_ins->bind_param("i", $id);
+        $stmt_ins->bind_param("i", $training_id);
         $stmt_ins->execute();
         $res_ins = $stmt_ins->get_result();
         
@@ -62,6 +63,7 @@ if ($id > 0) {
 
         // --- สร้าง Payload สำหรับส่งแจ้งเตือน ---
         $line_payload = [
+            'tid'           => (int)$training_id,
             'topic'       => $topic,
             'location'    => $location,
             'start'       => $start_mysql,
@@ -73,13 +75,14 @@ if ($id > 0) {
         ];
         
 
-               // ===============================
-        // ||       NOTIFY TYPE         ||
+        // echo '<pre>'; print_r($line_payload); echo '</pre>'; exit;
+        // ===============================
+        // ||       NOTIFY TYPE CANCEL    ||
         // ===============================
         // $notify_type = 'debug';
         
-        $notify_type = 'cancel';
-        include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
+        // $notify_type = 'cancel';
+        // include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
     }
 
     // --- เริ่มกระบวนการ UPDATE ฐานข้อมูล ---
@@ -91,14 +94,22 @@ if ($id > 0) {
                                    cancel_at = NOW()
                                    WHERE training_id = ?");
                                 //    เพิ่มชื่อผู้ยกเลิก
-        $stmt_up->bind_param("isi", $status, $cancel_by, $id);
+        $stmt_up->bind_param("isi", $status, $cancel_by, $training_id);
         $stmt_up->execute();
 
         // 2. คืนค่าสถานะเครื่องตรวจเป็น 3 (ไม่พร้อม) ตามเงื่อนไขคุณ
         if ($status == 2) {
-            $stmt_model = $conn->prepare("UPDATE automate_model SET ref_atm_status_manual_id = 3 
-                                          WHERE atm_model_id IN (SELECT instrument_id FROM instrument_training_items WHERE training_id = ?)");
-            $stmt_model->bind_param("i", $id);
+            $sql_update_model = "UPDATE automate_model 
+                                 SET ref_atm_status_manual_id = 3, 
+                                     inst_training_status = ? 
+                                 WHERE atm_model_id IN (
+                                     SELECT instrument_id FROM instrument_training_items WHERE training_id = ?
+                                 )";
+            
+            $stmt_model = $conn->prepare($sql_update_model);
+            
+            // bind $status (ซึ่งคือ 2) และ $training_id
+            $stmt_model->bind_param("ii", $status, $training_id);
             $stmt_model->execute();
         }
 
@@ -112,7 +123,7 @@ if ($id > 0) {
 
     } catch (Exception $e) {
         $conn->rollback();
-        echo "<script>alert('Error: " . addslashes($e->getMessage()) . "'); window.location.href = 'index.php?act=manual_guide';</script>";
+        echo "<script>alert('Error: " . addslashes($e->getMessage()) . "'); window.location.href = '?act=manual_guide';</script>";
         exit;
     }
 }

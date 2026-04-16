@@ -33,6 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    header("Location: ../index.php?act=manual_guide&status=train_success");
+    header("Location: ../?act=manual_guide&status=train_success");
     exit;
 }

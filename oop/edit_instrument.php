@@ -92,9 +92,9 @@ if ($ins_id > 0 && !$item) {
                 <a href="?act=view&id=<?= $ins_id ?>" target="_blank" class="btn btn-primary btn-sm px-3 rounded-pill shadow-sm text-white">
                     <i class="bi bi-eye-fill me-1"></i> View
                 </a>
-                <a href="<?= BASE_URL ?>?act=manual_guide" class="btn btn-outline-dark btn-sm rounded-pill">
-                    <i class="bi bi-arrow-left"></i> กลับหน้าหลัก
-                </a>
+                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill" onclick="history.back();">
+                <i class="bi bi-arrow-left"></i> กลับหน้าหลัก
+            </button>
             </div>
         </div>
         
@@ -123,11 +123,11 @@ if ($ins_id > 0 && !$item) {
                     </div>
                     <div class="col-md-6 text-md-end">
                         <div class="btn-group shadow-sm" role="group">
-                            <!-- <input type="radio" class="btn-check" name="status_selector" id="status_ready" value="1" 
+                            <input type="radio" class="btn-check" name="status_selector" id="status_ready" value="1" 
                                 <?= ($item['ref_atm_status_manual_id'] == 1) ? 'checked' : '' ?>>
                                 <label class="btn btn-outline-success btn-sm px-2 py-1 fw-bold"
                                         for="status_ready"
-                                        onclick="confirmStatusChange(this, 1, 'พร้อม', 'success')">พร้อม</label> -->
+                                        onclick="confirmStatusChange(this, 1, 'พร้อม', 'success')">พร้อม</label>
 
                             <input type="radio" class="btn-check" name="status_selector" id="status_training" value="3" 
                                 <?= ($item['ref_atm_status_manual_id'] == 3) ? 'checked' : '' ?>>

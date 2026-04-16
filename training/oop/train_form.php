@@ -57,7 +57,7 @@ $current_user = trim($fname . " " . $lname);
 <html lang="th">
 <head>
     <meta charset="utf-8">
-    <title>นัดหมายการเทรนเครื่องตรวจ</title>
+    <title>Automate Guide</title>
     <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>assets/imgs/logo/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -74,7 +74,7 @@ $current_user = trim($fname . " " . $lname);
                     <i class="bi bi-calendar-check-fill" style="color: #ffc107;"></i> 
                     นัดหมายการเทรนเครื่องตรวจ
                 </h2>
-                <p class="text-muted small">สร้างรายการนัดหมายและเลือกเครื่องมือที่ต้องการเปลี่ยนสถานะเป็น "รอเทรน"</p>
+                <!-- <p class="text-muted small">สร้างรายการนัดหมายและเลือกเครื่องมือที่ต้องการเปลี่ยนสถานะเป็น "รอเทรน"</p> -->
             </div>
             <a href="<?= BASE_URL ?>?act=manual_guide" class="btn btn-outline-dark btn-sm rounded-pill">
                 <i class="bi bi-arrow-left"></i> กลับหน้าหลัก
@@ -221,7 +221,7 @@ $current_user = trim($fname . " " . $lname);
             </div>
         </form>
     </div>
-
+<?php include __DIR__ . '/../includes/footer.php'; ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 1. ดึง Query String จาก URL
