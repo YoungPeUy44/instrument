@@ -40,10 +40,20 @@ $db = db();
 $db->set_charset('utf8mb4');
 
 // ดึงข้อมูลเครื่องตรวจ พร้อมสถานะเพื่อใช้ในการกรอง (ref_atm_status_manual_id)
+// $sql = "SELECT i.ins_id, m.atm_model_name, m.ref_atm_status_manual_id
+//         FROM instruments i 
+//         INNER JOIN automate_model m ON i.ins_id = m.atm_model_id
+//         WHERE ref_atm_status_manual_id=3
+//         ORDER BY m.atm_model_name ASC";
 $sql = "SELECT i.ins_id, m.atm_model_name, m.ref_atm_status_manual_id
         FROM instruments i 
         INNER JOIN automate_model m ON i.ins_id = m.atm_model_id
-        WHERE ref_atm_status_manual_id=3
+        WHERE m.ref_atm_status_manual_id = 3
+        AND NOT EXISTS (
+            SELECT 1 FROM instrument_training_items iti
+            WHERE iti.instrument_id = i.ins_id
+            AND iti.training_prosess_id = 1
+        )
         ORDER BY m.atm_model_name ASC";
 $res = $db->query($sql);
 $instruments = $res->fetch_all(MYSQLI_ASSOC);

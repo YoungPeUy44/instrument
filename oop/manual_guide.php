@@ -1,8 +1,8 @@
 <?php
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
 // 1. ดึงระบบ Auto-Login สำหรับ Local (ถ้ามีไฟล์แยกให้ require มา)
-require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php'; //local
-// $permission_path = __DIR__ . '/../config/permission.php'; //proguction
+// require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php'; //local
+$permission_path = __DIR__ . '/../config/permission.php'; //proguction
 
 // 2. เช็คสิทธิ์: ถ้าไม่มี Session หรือ สิทธิ์น้อยกว่า 1 (สิทธิ์ 0) ให้ดีดออก
 if (!isset($_SESSION['user_instrument']) || (int)$_SESSION['user_instrument'] < 1) { 
@@ -38,6 +38,7 @@ require_once __DIR__ . '/../db/db.php';
 require_once __DIR__ . '/../config/auth.php';
 require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/../config/permission.php';
+$can_edit = checkLevel(2);
 
 
 $connpeuy = db();
@@ -151,7 +152,7 @@ $result = $stmt->get_result();
 <body class="bg-light">
   <div class="container py-4">
     <div class="d-flex align-items-center mb-3">
-      <a href="../" class="btn btn-outline-primary me-3 shadow-sm border-2 rounded-3" title="กลับหน้าหลักระบบ">
+      <a href="../alt/timeline" class="btn btn-outline-primary me-3 shadow-sm border-2 rounded-3" title="กลับหน้าหลักระบบ">
         <i class="bi bi-house-door-fill"></i>
       </a>
       <h1 class="h3 mb-0 fw-bold d-flex justify-content-between align-items-center w-100">
@@ -183,8 +184,9 @@ $result = $stmt->get_result();
         <div class="col-12 col-md-5">
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" id="liveSearch" name="kw" class="form-control border-start-0" 
-                       placeholder="ค้นหาชื่อเครื่องตรวจ..." value="<?= htmlspecialchars($kw) ?>">
+                <input type="text" id="searchIns" name="kw" class="form-control border-start-0"
+                       placeholder="ค้นหาชื่อเครื่องตรวจ..." value="<?= htmlspecialchars($kw) ?>"
+                       autocomplete="off">
             </div>
         </div>
         <div class="col-6 col-md-3">
@@ -243,7 +245,7 @@ $result = $stmt->get_result();
               <th style="width:80px;" class="text-center">จัดการ</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="tableBody">
             <?php if ($result->num_rows === 0): ?>
               <tr><td colspan="6" class="text-center text-muted p-5">ไม่พบข้อมูลเครื่องตรวจ</td></tr>
             <?php else: ?>
@@ -315,7 +317,7 @@ $result = $stmt->get_result();
     </div>
     
 <!-- มือถือ -->
-  <div class="d-md-none px-2">
+  <div class="d-md-none px-2" id="mobileList">
     <?php if ($result->num_rows === 0): ?>
         <div class="text-center p-5 text-muted bg-white rounded-4 shadow-sm">
             ไม่พบข้อมูลเครื่องตรวจ
@@ -396,22 +398,24 @@ $result = $stmt->get_result();
         <?php endwhile; ?>
     <?php endif; ?>
 </div>
-
-    <nav class="py-3">
+<!-- แบ่งหน้า -->
+    <nav class="py-3" id="paginationWrap">
         <ul class="pagination pagination-sm justify-content-center mb-0">
             <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
-                <a class="page-link shadow-sm mx-1 rounded-3" href="?act=manual_guide&page=<?= $current_page-1 ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>">
+                <a class="page-link shadow-sm mx-1 rounded-3" 
+                href="?act=manual_guide&page=<?= $current_page-1 ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>&status_id=<?= $status_id ?>">
                     <i class="bi bi-chevron-left"></i>
                 </a>
             </li>
 
             <?php
-            $window = 2; // จำนวนเลขหน้ารอบหน้าปัจจุบัน
+            $window = 2;
             for ($p = 1; $p <= $total_pages; $p++) {
                 if ($p == 1 || $p == $total_pages || ($p >= $current_page - $window && $p <= $current_page + $window)) {
                     ?>
                     <li class="page-item <?= ($p == $current_page) ? 'active' : '' ?>">
-                        <a class="page-link shadow-sm mx-1 rounded-3" href="?act=manual_guide&page=<?= $p ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>">
+                        <a class="page-link shadow-sm mx-1 rounded-3" 
+                        href="?act=manual_guide&page=<?= $p ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>&status_id=<?= $status_id ?>">
                             <?= $p ?>
                         </a>
                     </li>
@@ -424,7 +428,8 @@ $result = $stmt->get_result();
             ?>
 
             <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
-                <a class="page-link shadow-sm mx-1 rounded-3" href="?act=manual_guide&page=<?= $current_page+1 ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>">
+                <a class="page-link shadow-sm mx-1 rounded-3" 
+                href="?act=manual_guide&page=<?= $current_page+1 ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>&status_id=<?= $status_id ?>">
                     <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
@@ -435,27 +440,36 @@ $result = $stmt->get_result();
 <?php include __DIR__ . '/../includes/footer.php'; ?>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ค้นหา
-    $("#liveSearch").on("keyup", function() {
-    var value = $(this).val().toLowerCase();
-    var rowCount = 0;
+    const BASE_URL        = '<?= BASE_URL ?>';
+    const BASE_SEARCH_URL = '<?= BASE_URL ?>config/search_manual.php';
+</script>
+<script src="<?= BASE_URL ?>assets/js/manual_guide.js"></script>
+<script>
+    // ====== Live Filter — พิมพ์แล้วกรองตารางทันที ======
+    // $("#searchIns").on("input", function() {
+    //     const val = $(this).val().toLowerCase().trim();
+    //     let count = 0;
 
-    $(".table-custom tbody tr").filter(function() {
-        var match = $(this).text().toLowerCase().indexOf(value) > -1;
-        $(this).toggle(match);
-        if(match) rowCount++;
-    });
+    //     $(".table-custom tbody tr").each(function() {
+    //         // ค้นหาจากคอลัมน์ชื่อเครื่องตรวจ (td ที่ 2) และ ID (td ที่ 1)
+    //         const name = $(this).find("td:eq(1)").text().toLowerCase();
+    //         const id   = $(this).find("td:eq(1) small, td:eq(1)").text().toLowerCase();
+    //         const match = val === "" || name.includes(val) || id.includes(val);
+    //         $(this).toggle(match);
+    //         if (match) count++;
+    //     });
 
-    // ถ้าไม่เจอเลย ให้แสดงแถวพิเศษ (ถ้ายังไม่มี)
-    if(rowCount === 0) {
-        if($("#no-results").length === 0) {
-            $(".table-custom tbody").append('<tr id="no-results"><td colspan="10" class="text-center py-4 text-muted">ไม่พบข้อมูลที่ค้นหา</td></tr>');
-        }
-    } else {
-        $("#no-results").remove();
-    }
-});
+    //     $("#no-results").remove();
+    //     if (count === 0 && val !== "") {
+    //         $(".table-custom tbody").append(
+    //             '<tr id="no-results"><td colspan="10" class="text-center py-5 text-muted">' +
+    //             '<i class="bi bi-search d-block mb-2" style="font-size:2rem;opacity:.3"></i>' +
+    //             'ไม่พบเครื่องตรวจที่ค้นหา</td></tr>'
+    //         );
+    //     }
+    // });
 
 document.addEventListener('DOMContentLoaded', function() {
     // 1. จัดการ Error Script จาก PHP
@@ -514,8 +528,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="<?= BASE_URL ?>assets/js/manual_guide.js"></script>
 </body>
 </html>
 

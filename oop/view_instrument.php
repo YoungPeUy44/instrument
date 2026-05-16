@@ -62,7 +62,7 @@ $det   = $conn->query("SELECT * FROM instrument_determination WHERE instrument_i
         <h4 class="mb-0 fw-bold text-dark">
             <i class="bi bi-display me-2 text-primary"></i><?= htmlspecialchars($item['name']) ?>
         </h4>      
-            <button type="button" class="btn btn-outline-dark btn-sm rounded-pill" onclick="history.back();">
+            <button type="button" class="btn btn-outline-dark btn-sm rounded-pill" onclick="smartBack();">
                 <i class="bi bi-arrow-left"></i> กลับหน้าหลัก
             </button>
     </div>
@@ -202,6 +202,7 @@ $det   = $conn->query("SELECT * FROM instrument_determination WHERE instrument_i
 
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= BASE_URL ?>assets/js/historyback.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         Fancybox.bind("[data-fancybox]", { Carousel: { transition: "slide" } });

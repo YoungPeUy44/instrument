@@ -13,7 +13,9 @@ $user_level = isset($_SESSION['user_instrument']) ? (int)$_SESSION['user_instrum
 $current_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '';
 $user_dept = isset($_SESSION['user_department']) ? $_SESSION['user_department'] : '';
 
-$sql = "SELECT t.*, GROUP_CONCAT(m.atm_model_name SEPARATOR ', ') AS instruments, GROUP_CONCAT(m.atm_model_id SEPARATOR ',') AS ins_id_list 
+$sql = "SELECT t.*, 
+        GROUP_CONCAT(CONCAT(m.atm_model_id, ':', m.atm_model_name) SEPARATOR '|') AS instrument_data,
+        GROUP_CONCAT(m.atm_model_id SEPARATOR ',') AS ins_id_list 
         FROM instrument_training t 
         LEFT JOIN instrument_training_items ti ON t.training_id = ti.training_id 
         LEFT JOIN automate_model m ON ti.instrument_id = m.atm_model_id 
@@ -30,6 +32,19 @@ $st = (int)$data['training_status'];
 $user_level = (int)($_SESSION['user_instrument'] ?? 0);
 $current_user_id = $_SESSION['user_id'] ?? '';
 ?>
+
+<?php if ($mode === 'full'): ?>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    /* ทำให้ layout เต็มจอ */
+    
+</style>
+<?php endif; ?>
 
 <div class="modal-header border-0 p-4" style="background-color: #ffc107;">
     <h5 class="modal-title fw-bold text-dark d-flex align-items-center">
@@ -72,11 +87,23 @@ $current_user_id = $_SESSION['user_id'] ?? '';
         <br>
         <label class="small text-muted mb-1 fw-bold">เครื่องตรวจที่นัดเทรน</label>
         <div class="d-flex flex-wrap gap-2">
-            <?php foreach(explode(', ', $data['instruments']) as $ins): if(!$ins) continue; ?>
-                <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-1">
-                    <?= htmlspecialchars($ins) ?>
-                </span>
-            <?php endforeach; ?>
+            <?php 
+            if (!empty($data['instrument_data'])):
+                $ins_items = explode('|', $data['instrument_data']);
+                foreach($ins_items as $item): 
+                    if(!$item) continue;
+                    // แยก ID และ ชื่อ ออกจากกัน
+                    list($ins_id, $ins_name) = explode(':', $item);
+            ?>
+                <a href="<?= BASE_URL ?>?act=view&id=<?= $ins_id ?>" 
+                target="_blank" 
+                class="badge-instrument">
+                    <i class="bi bi-search me-1 small"></i> <?= htmlspecialchars($ins_name) ?>
+                </a>
+            <?php 
+                endforeach; 
+            endif;
+            ?>
         </div>
     </div>
 
@@ -150,4 +177,4 @@ $current_user_id = $_SESSION['user_id'] ?? '';
         <?php endif; ?>
     </div>
 </div>
-<!-- <script src="<?= TRAIN_JS_URL ?>training_history.js?v=<?= time() ?>"></script> -->
+<script src="<?= TRAIN_JS_URL ?>training_history_detail.js?v=<?= time() ?>"></script>

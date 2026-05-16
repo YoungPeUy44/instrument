@@ -81,8 +81,8 @@ if ($training_id  > 0) {
         // ===============================
         // $notify_type = 'debug';
         
-        // $notify_type = 'cancel';
-        // include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
+        $notify_type = 'cancel';
+        include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
     }
 
     // --- เริ่มกระบวนการ UPDATE ฐานข้อมูล ---
@@ -98,20 +98,35 @@ if ($training_id  > 0) {
         $stmt_up->execute();
 
         // 2. คืนค่าสถานะเครื่องตรวจเป็น 3 (ไม่พร้อม) ตามเงื่อนไขคุณ
-        if ($status == 2) {
+       if ($status == 2) {
+            // แก้ไข SQL: เอา "ref_instrument_training = NULL" ออก 
+            // เพื่อให้ค่า ID เดิมยังคงค้างอยู่ในตาราง automate_model
             $sql_update_model = "UPDATE automate_model 
-                                 SET ref_atm_status_manual_id = 3, 
-                                     inst_training_status = ? 
-                                 WHERE atm_model_id IN (
-                                     SELECT instrument_id FROM instrument_training_items WHERE training_id = ?
-                                 )";
+                                SET ref_atm_status_manual_id = 2 
+                                WHERE atm_model_id IN (
+                                    SELECT instrument_id FROM instrument_training_items WHERE training_id = ?
+                                )";
             
             $stmt_model = $conn->prepare($sql_update_model);
             
-            // bind $status (ซึ่งคือ 2) และ $training_id
-            $stmt_model->bind_param("ii", $status, $training_id);
-            $stmt_model->execute();
+            if ($stmt_model) {
+                // Bind เฉพาะ $training_id ตัวเดียวสำหรับเงื่อนไข WHERE
+                $stmt_model->bind_param("i", $training_id);
+                
+                if (!$stmt_model->execute()) {
+                    throw new Exception("Update automate_model Error: " . $stmt_model->error);
+                }
+                $stmt_model->close();
+            } else {
+                throw new Exception("Prepare SQL Error: " . $conn->error);
+            }
         }
+        // update training_prosess_id=0
+        $stmt_prosess = $conn->prepare("UPDATE instrument_training_items 
+                                    SET training_prosess_id = 0 
+                                    WHERE training_id = ?");
+        $stmt_prosess->bind_param("i", $training_id);
+        $stmt_prosess->execute();
 
         $conn->commit();
 

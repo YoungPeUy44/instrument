@@ -73,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $start_mysql = date('Y-m-d H:i:s', $start_ts);
     $end_mysql = date('Y-m-d H:i:s', $end_ts);
+    $action_at = date('Y-m-d H:i:s');
     
     // เริ่ม Transaction
     $conn->begin_transaction();
@@ -83,15 +84,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $table_name = ($result->num_rows > 0) ? 'instrument_training' : 'instrument_training';
         
         // บันทึกข้อมูลหลัก
-        $sql = "INSERT INTO $table_name (training_topic, training_location, training_start, training_end, training_detail, created_by, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?,  NOW())";
+        $sql = "INSERT INTO $table_name (training_topic, training_location, training_start, training_end, training_detail, created_by, created_by_id, created_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
         
         if (!$stmt) {
             throw new Exception("Prepare failed: " . $conn->error);
         }
-        
-        $stmt->bind_param("ssssss", $topic, $location, $start_mysql, $end_mysql, $detail, $created_by);
+        $created_by_id = $_SESSION['user_id'];
+        $stmt->bind_param("ssssssi", $topic, $location, $start_mysql, $end_mysql, $detail, $created_by, $created_by_id);
         
         if (!$stmt->execute()) {
             throw new Exception("Insert failed: " . $stmt->error);
@@ -102,8 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $instrument_list = []; // สร้าง Array ไว้เก็บข้อมูลเครื่องตรวจ (ID และ ชื่อ)
         
 
-        // บันทึกเครื่องตรวจลง mapping table
-        $stmt_item = $conn->prepare("INSERT INTO instrument_training_items (training_id, instrument_id) VALUES (?, ?)");
+        // บันทึกเครื่องตรวจลง mapping table เพิ่มยิง training_proesee_id=1
+        $stmt_item = $conn->prepare("INSERT INTO instrument_training_items (training_id, instrument_id, training_prosess_id) VALUES (?, ?, 1)");
         // เตรียม SQL สำหรับดึงชื่อเครื่องตรวจ
         $stmt_get_name = $conn->prepare("SELECT atm_model_name FROM automate_model WHERE atm_model_id = ?");
 
@@ -123,11 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ins_name = $row_name['atm_model_name'] ?? 'ไม่ทราบชื่อ';
 
             $sql_update_model = "UPDATE automate_model 
-                         SET inst_training_topic = ?, 
-                             inst_training_location = ?, 
-                             inst_training_start = ?, 
-                             inst_training_end = ?,
-                             inst_training_status = 0, 
+                         SET ref_instrument_training = ?,                           
                              ref_atm_status_manual_id = 3 
                          WHERE atm_model_id = ?";
 
@@ -137,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 3. ตรวจสอบว่า Prepare สำเร็จไหมก่อนจะ Bind (ช่วย Debug ได้ดี)
             if ($stmt_model) {
                 // ต้องมี 5 ตัวแปรให้ตรงกับเครื่องหมาย ? ใน SQL ด้านบน
-                $stmt_model->bind_param("ssssi", $topic, $location, $start_mysql, $end_mysql, $ins_id);
+                $stmt_model->bind_param("ii", $training_id, $ins_id);
                 $stmt_model->execute();
             } else {
                 // ถ้ามันเข้าตรงนี้ แสดงว่า SQL บรรทัดบนมีชื่อคอลัมน์ผิด
@@ -180,8 +177,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // ||       NOTIFY TYPE         ||
         // ===============================
         // $notify_type = 'debug';
-        // $notify_type = 'train';
-        // include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
+        $notify_type = 'train';
+        include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
         
         header("Location: " . BASE_URL . "?act=training_history&status=order_success");
         exit;

@@ -165,35 +165,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $updates[] = "equipment_image = ?";
                     $params[] = $eq_img_name;
                     $types .= "s";
+
+                    $updates[] = "updated_by = ?"; // หรือ atm_model_updatedBy
+                    $params[] = $full_name; // ใช้ตัวแปร trim($fname . " " . $lname)
+                    $types .= "s";
                 }
             }
         }
-        // อัปโหลดรูปภาพประกอบ Setup / Run
         if (!empty($_FILES['setup_images']['name'][0])) {
-            uploadCustomFiles($_FILES['setup_images'], IMG_PATH, $conn, $ins_id, 'instrument_setup_images', $base_name . '_setup', $MAX_IMG_SIZE);
+            uploadCustomFiles($_FILES['setup_images'], IMG_PATH, $conn, $ins_id, 'instrument_setup_images', $base_name . '_setup', $MAX_IMG_SIZE, $full_name);
         }
         if (!empty($_FILES['run_images']['name'][0])) {
-            uploadCustomFiles($_FILES['run_images'], IMG_PATH, $conn, $ins_id, 'instrument_run_images', $base_name . '_run', $MAX_IMG_SIZE);
+            uploadCustomFiles($_FILES['run_images'], IMG_PATH, $conn, $ins_id, 'instrument_run_images', $base_name . '_run', $MAX_IMG_SIZE, $full_name);
         }
 
     } elseif ($mode === 'sort') {
-        // อัปเดตลำดับภาพ
+        // ✅ แก้ไข: รับค่า ID จาก Array และใช้ type จาก POST parameter แทน
         if (isset($_POST['sort_order'])) {
             $sort_data = json_decode($_POST['sort_order'], true);
-            if (is_array($sort_data)) {
-                foreach ($sort_data as $item) {
-                    $type = $item['type'];
-                    $id = (int)$item['id'];
-                    $order = (int)$item['order'];
-                    
-                    $table = ($type === 'setup') ? 'instrument_setup_images' : 'instrument_run_images';
-                    $pk = ($type === 'setup') ? 'setup_id' : 'run_id';
-                    
+            $type = $_POST['type'] ?? ''; // รับค่า type (setup/run) ที่ส่งมาจาก JS
+
+            if (is_array($sort_data) && !empty($type)) {
+                $table = ($type === 'setup') ? 'instrument_setup_images' : 'instrument_run_images';
+                $pk = ($type === 'setup') ? 'setup_id' : 'run_id';
+
+                foreach ($sort_data as $index => $id) {
+                    $id = (int)$id;
+                    $order = $index + 1; // ลำดับใหม่เริ่มจาก 1
+
                     $stmt_sort = $conn->prepare("UPDATE $table SET sort_order = ? WHERE $pk = ? AND instrument_id = ?");
                     $stmt_sort->bind_param("iii", $order, $id, $ins_id);
                     $stmt_sort->execute();
                     $stmt_sort->close();
                 }
+                // ✅ สำคัญ: ต้อง echo OK เพื่อให้ JavaScript รู้ว่าสำเร็จ
+                ob_clean(); 
+                echo "OK"; 
+                exit; 
             }
         }
     }
@@ -227,29 +235,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /**
  * [SECTION 5] Helper Function สำหรับจัดการการอัปโหลดไฟล์
  */
-function uploadCustomFiles($fileInput, $targetPath, $conn, $insId, $tableName, $filePrefix, $maxSize) {
-    if (!is_dir($targetPath)) mkdir($targetPath, 0755, true);
-    
-    foreach ($fileInput['name'] as $key => $val) {
-        if (empty($val)) continue;
-        
-        if ($fileInput['error'][$key] === UPLOAD_ERR_OK && $fileInput['size'][$key] <= $maxSize) {
-            $ext = strtolower(pathinfo($val, PATHINFO_EXTENSION));
-            $newFileName = $filePrefix . '_' . substr(uniqid(), -5) . '.' . $ext;
-            
-            if (move_uploaded_file($fileInput['tmp_name'][$key], $targetPath . $newFileName)) {
-                if ($tableName === 'instrument_determination') {
-                    $st = $conn->prepare("INSERT INTO $tableName (instrument_id, file_name, original_name) VALUES (?, ?, ?)");
-                    $st->bind_param("iss", $insId, $newFileName, $val);
-                } else {
-                    $res = $conn->query("SELECT MAX(sort_order) as max_sort FROM $tableName WHERE instrument_id = $insId");
-                    $row = $res->fetch_assoc();
-                    $nextOrder = ($row['max_sort'] !== null) ? $row['max_sort'] + 1 : 0;
-                    $st = $conn->prepare("INSERT INTO $tableName (instrument_id, file_name, sort_order) VALUES (?, ?, ?)");
-                    $st->bind_param("isi", $insId, $newFileName, $nextOrder);
-                }
-                $st->execute();
-                $st->close();
+function uploadCustomFiles($files, $path, $conn, $ins_id, $table, $prefix, $maxSize, $uploader_name = 'System') {
+    foreach ($files['name'] as $i => $name) {
+        if ($files['error'][$i] === UPLOAD_ERR_OK && $files['size'][$i] <= $maxSize) {
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            $new_name = $prefix . '_' . substr(uniqid(), -5) . '_' . $i . '.' . $ext;
+
+            if (move_uploaded_file($files['tmp_name'][$i], $path . $new_name)) {
+                // ✅ เพิ่มคอลัมน์ uploaded_by เข้าไปในการ INSERT
+                $sql = "INSERT INTO $table (instrument_id, file_name, uploaded_by, sort_order) VALUES (?, ?, ?, ?)";
+                $stmt = $conn->prepare($sql);
+                
+                // หาค่า sort_order ล่าสุดก่อน insert (ถ้าจำเป็น) หรือใส่เป็น 0 ไว้ก่อน
+                $order = 0; 
+                
+                $stmt->bind_param("issi", $ins_id, $new_name, $uploader_name, $order);
+                $stmt->execute();
+                $stmt->close();
             }
         }
     }

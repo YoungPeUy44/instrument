@@ -14,9 +14,10 @@ if (defined('APP_ENV') && APP_ENV === 'local' && !isset($_SESSION['user_instrume
     
     // ✅ เพิ่มการเซต user_id เป็น 3 เพื่อให้เงื่อนไขปุ่มลบ (ID=3) ทำงานได้ในเครื่อง Local
     $_SESSION['user_id'] = "3"; 
+    // $_SESSION['user_id'] = "17"; 
     
-    $_SESSION['user_department'] = "instrument";
-    // $_SESSION['user_department'] = "executive";
+    // $_SESSION['user_department'] = "instrument";
+    $_SESSION['user_department'] = "executive";
 
     // (Optional) เซตชื่อเพื่อใช้โชว์ในระบบ
     $_SESSION['user_firstname'] = "Young";

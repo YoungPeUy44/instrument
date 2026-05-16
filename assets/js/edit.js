@@ -70,30 +70,53 @@ document.getElementById('saveRunOrder')?.addEventListener('click', e => {
 // - ปุ่ม #saveSetupOrder / #saveRunOrder จะ POST ไป re_images.php
 // - ส่ง instrument_id, type, order เป็น JSON
 
-async function saveOrder(listEl) {
-  if (!listEl) return alert('ไม่พบรายการภาพ');
-  const insId = listEl.dataset.ins;
-  const type  = listEl.dataset.type;
-  const ids   = [...listEl.querySelectorAll('.image-item')].map(li => li.dataset.id);
+// assets/edit.js 
 
-  if (!insId) return alert('ไม่พบ instrument_id (data-ins)');
-  if (!type)  return alert('ไม่พบ type ของลิสต์');
-  if (ids.length === 0) return alert('ยังไม่มีรูปให้จัดลำดับ');
-
-  const form = new FormData();
-  form.append('instrument_id', insId);
-  form.append('type', type);
-  form.append('order', JSON.stringify(ids));
-
-  try {
-    const res  = await fetch('re_images.php', { method: 'POST', body: form });
-    const text = await res.text();
-    if (text.trim().toUpperCase().includes('OK')) {
-      alert('✅ บันทึกลำดับเรียบร้อย');
-    } else {
-      alert('⚠️ เซิร์ฟเวอร์ตอบกลับ: ' + text);
+async function saveOrder(type, insId, baseUrl) {
+    // 1. หา Container ตาม ID ที่คุณใช้จริง (setup-sortable หรือ run-sortable)
+    const listEl = document.getElementById(type + '-sortable');
+    
+    if (!listEl) {
+        alert('ไม่พบรายการภาพ: ' + type + '-sortable');
+        return;
     }
-  } catch (err) {
-    alert('❌ เชื่อมต่อไม่ได้: ' + err.message);
-  }
+
+    // 2. ดึง ID จาก class .sortable-item (ที่คุณใช้ใน edit_sort_images.php)
+    const items = listEl.querySelectorAll('.sortable-item');
+    const ids = Array.from(items).map(li => li.dataset.id).filter(id => id);
+
+    if (ids.length === 0) return alert('ยังไม่มีรูปให้จัดลำดับ');
+    if (!insId) return alert('ไม่พบรหัสเครื่องตรวจ (insId)');
+
+    // 3. เตรียมข้อมูล
+    const form = new FormData();
+    form.append('mode', 'sort');      // ส่งให้ save_instrument.php รู้ว่าเป็นโหมดจัดลำดับ
+    form.append('type', type);        // 'setup' หรือ 'run'
+    form.append('ins_id', insId);     // รหัสเครื่องตรวจ
+    form.append('sort_order', JSON.stringify(ids)); // ส่งเป็น JSON array ของ ID
+
+    try {
+        // 4. ส่งไปที่ save_instrument.php (รวมที่เดียวตามที่คุณต้องการ)
+        const cleanPath = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+        const res = await fetch(cleanPath + 'db/save_instrument.php', { 
+            method: 'POST', 
+            body: form 
+        });
+        
+        const text = await res.text();
+        console.log("Server Response:", text);
+
+        if (text.trim().toUpperCase().includes('OK')) {
+            if (window.Toast) {
+                window.Toast.fire({ icon: 'success', title: 'จัดลำดับเรียบร้อย (เริ่มที่ 0)' });
+            } else {
+                alert('✅ บันทึกลำดับเรียบร้อย');
+            }
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            alert('⚠️ บันทึกไม่สำเร็จ: ' + text);
+        }
+    } catch (err) {
+        alert('❌ เชื่อมต่อไม่ได้: ' + err.message);
+    }
 }

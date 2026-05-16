@@ -7,6 +7,7 @@ require_once __DIR__ . '/../db/db.php';
 $conn = db();
 $ins_id = (int)($_GET['id'] ?? $_GET['ins_id'] ?? 0);
 $active_mode = $_GET['mode'] ?? 'basic';
+// 
 
 // --- 1. เตรียมข้อมูลเครื่องตรวจ - เพิ่ม cable_type_id และ config_text ---
 $stmt = $conn->prepare("
@@ -121,7 +122,41 @@ if ($ins_id > 0 && !$item) {
                             </span>
                         </div>
                     </div>
-                    <div class="col-md-6 text-md-end">
+                    <!-- ปุ่ม -->
+                     <div class="col-md-6 text-md-end">
+                     <?php
+                        $current_status  = (int)$item['ref_atm_status_manual_id'];
+                        $current_user_id = (int)($_SESSION['user_id'] ?? 0);
+                        $is_admin        = ($current_user_id === 17);
+                        ?>
+
+                        <div class="btn-group shadow-sm" role="group">
+
+                            <?php if ($is_admin): ?>
+                            <!-- เฉพาะ user_id=17 เห็นปุ่มพร้อม -->
+                            <input type="radio" class="btn-check" name="status_selector" id="status_ready" value="1"
+                                <?= ($current_status == 1) ? 'checked' : '' ?>>
+                            <label class="btn btn-outline-success btn-sm px-2 py-1 fw-bold"
+                                for="status_ready"
+                                onclick="confirmStatusChange(this, 1, 'พร้อม', 'success')">พร้อม</label>
+                            <?php endif; ?>
+
+                            <input type="radio" class="btn-check" name="status_selector" id="status_training" value="3"
+                                <?= ($current_status == 3) ? 'checked' : '' ?>>
+                            <label class="btn btn-outline-warning btn-sm px-2 py-1 fw-bold text-dark"
+                                for="status_training"
+                                onclick="confirmStatusChange(this, 3, 'รอเทรน', 'warning')">รอเทรน</label>
+
+                            <input type="radio" class="btn-check" name="status_selector" id="status_not_ready" value="2"
+                                <?= ($current_status == 2) ? 'checked' : '' ?>>
+                            <label class="btn btn-outline-danger btn-sm px-2 py-1 fw-bold"
+                                for="status_not_ready"
+                                onclick="confirmStatusChange(this, 2, 'ไม่พร้อม', 'danger')">ไม่พร้อม</label>
+
+                        </div>
+                    <input type="hidden" id="current_status_val" value="<?= $current_status ?>">
+                    </div>
+                    <!-- <div class="col-md-6 text-md-end">
                         <div class="btn-group shadow-sm" role="group">
                             <input type="radio" class="btn-check" name="status_selector" id="status_ready" value="1" 
                                 <?= ($item['ref_atm_status_manual_id'] == 1) ? 'checked' : '' ?>>
@@ -143,7 +178,7 @@ if ($ins_id > 0 && !$item) {
                         </div>
                         <input type="hidden" id="current_status_val" value="<?= $item['ref_atm_status_manual_id'] ?>">
                         
-                    </div>
+                    </div> -->
                 </div>
                 
                 <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">

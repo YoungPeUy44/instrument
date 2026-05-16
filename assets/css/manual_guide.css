@@ -35,8 +35,7 @@
 /* 3. หัวใจสำคัญ: เพิ่มพื้นที่จำลองด้านล่างสุด */
 /* ป้องกันกรณีมีข้อมูลน้อยแล้ว Dropdown ทิ่มลงด้านล่างจนหลุดขอบหน้าจอเบราว์เซอร์ */
 .container.py-4 {
-    padding-bottom: 350px !important; 
-    min-height: 100vh;
+    padding-bottom: 2rem;
 }
 
 /* 4. ปรับแต่งส่วนตารางให้ดูง่ายและพอดีหน้าจอ */
@@ -87,9 +86,6 @@
 }
 
 /* เพิ่มระยะห่างให้ Container ด้านล่างสุด */
-.container.py-4 {
-    padding-bottom: 200px !important;
-}
 /*  */
 .thumb { width: 100px; height: 70px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
 .table td, .table th { vertical-align: middle; }
@@ -122,9 +118,7 @@
     cursor: pointer;
     display: inline-block;
 }
-    .container.py-4 {
-        padding-bottom: 0 !important;
-    }
+    
 
     /* ลดระยะห่างใต้ตาราง/การ์ด */
     .card.mb-4 {
@@ -143,12 +137,21 @@
     }
 
     /* ปรับแต่ง Footer ให้กระชับ (Compact Footer) */
-.main-footer {
+/* .main-footer {
     background-color: #fff;
     border-top: 1px solid #dee2e6;
     color: #869099;
     padding: 1rem;
+} */
+/* body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
+html, body {
+    height: 100%;
+} */
 
 @media (max-width: 768px) {
         .main-footer {
@@ -182,3 +185,29 @@
             padding: 0.5rem 0.8rem !important;
         }
     }
+
+/* ====== Live Search Dropdown ====== */
+.livesearch-wrapper { position: relative; }
+#ls-dropdown {
+    display: none; position: absolute;
+    top: 100%; left: 0; right: 0; z-index: 1055;
+    background: #fff; border: 1px solid #dee2e6; border-top: none;
+    border-radius: 0 0 .5rem .5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    max-height: 360px; overflow-y: auto;
+}
+#ls-dropdown.show { display: block; }
+.ls-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    text-decoration: none; color: inherit;
+    transition: background 0.25;
+}
+.ls-item:last-child { border-bottom: none; }
+.ls-item:hover, .ls-item.ls-active { background: #f0f4ff; }
+.ls-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; flex-shrink: 0; }
+.ls-item-name { font-weight: 600; font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ls-item-meta { font-size: .72rem; color: #888; }
+.ls-msg { padding: 14px; text-align: center; font-size: .85rem; color: #aaa; }
+mark.ls-hl { background: #fff3cd; border-radius: 2px; font-weight: 700; padding: 0; }

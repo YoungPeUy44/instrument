@@ -30,44 +30,60 @@ const sortOptions = {
  * 3. ฟังก์ชันบันทึกลำดับ (พร้อมระบบปิดปุ่มป้องกันการกดซ้ำ)
  */
 window.saveOrder = function(type, insId, baseUrl) {
-    const btn = event.currentTarget; // ดึงปุ่มที่กด
-    const container = document.getElementById(type + '-sortable');
-    if (!container || !btn) return;
-
-    const items = container.querySelectorAll('.workbench-item, .sortable-item');
-    const order = Array.from(items).map(item => item.dataset.id);
-
-    if (order.length === 0) return;
-
-    // ปิดปุ่มและแสดงสถานะกำลังโหลด
-    const originalHTML = btn.innerHTML;
+    // 1. หาปุ่มที่กดและเปลี่ยนสถานะเป็น Loading
+    const btn = event.target.closest('button');
+    const originalHtml = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> กำลังบันทึก...';
 
+    // 2. ดึง ID ของรูปภาพที่เรียงอยู่ใน List ปัจจุบัน
+    const itemIds = [];
+    const listItems = document.querySelectorAll(`#${type}-sortable .sortable-item`);
+    listItems.forEach(item => {
+        const id = item.getAttribute('data-id');
+        if (id) itemIds.push(id);
+    });
+
+    // 3. เตรียมข้อมูลส่งไปที่ PHP
     const formData = new FormData();
-    formData.append('type', type);
     formData.append('instrument_id', insId);
-    formData.append('order', JSON.stringify(order));
+    formData.append('type', type);
+    formData.append('order', itemIds.join(',')); // ส่งเป็น "10,15,12"
 
     const cleanPath = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
 
-    fetch(cleanPath + '?act=re_images', {
+    // 4. ส่งข้อมูลด้วย Fetch API
+    fetch(cleanPath + 'db/re_images.php', {
         method: 'POST',
         body: formData
     })
     .then(res => res.text())
     .then(data => {
         if (data.trim() === 'OK') {
-            window.Toast.fire({ icon: 'success', title: 'จัดลำดับเรียบร้อย' });
+            window.Toast.fire({
+                icon: 'success',
+                title: 'บันทึกลำดับภาพสำเร็จ'
+            });
+            // อัปเดตตัวเลข "รูปที่ x" ในหน้าเว็บให้ตรงกับลำดับใหม่
+            listItems.forEach((item, index) => {
+                const infoText = item.querySelector('.sortable-info');
+                if (infoText) {
+                    const fileName = infoText.querySelector('small').innerText;
+                    infoText.innerHTML = `รูปที่ ${index + 1} <small class="text-muted ms-2">${fileName}</small>`;
+                }
+            });
         } else {
             Swal.fire('Error', data, 'error');
         }
     })
-    .catch(err => Swal.fire('Error', 'ไม่สามารถติดต่อ Server ได้', 'error'))
+    .catch(err => {
+        console.error(err);
+        Swal.fire('Error', 'ไม่สามารถเชื่อมต่อกับ Server ได้', 'error');
+    })
     .finally(() => {
-        // เปิดปุ่มคืนค่าเดิม
+        // คืนค่าสถานะปุ่ม
         btn.disabled = false;
-        btn.innerHTML = originalHTML;
+        btn.innerHTML = originalHtml;
     });
 };
 

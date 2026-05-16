@@ -77,20 +77,23 @@ if ($training_id > 0 && !empty($ins_ids)) {
         // ||       NOTIFY TYPE         ||
         // ===============================
         // $notify_type = 'debug';
-        // $notify_type = 'confirm';
-        // include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
+        $notify_type = 'confirm';
+        include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/line_notify_training.php');
     }
 
     // --- เริ่มกระบวนการ UPDATE ฐานข้อมูล ---
     $db->begin_transaction();
+    $fname = $_SESSION['user_firstname'] ?? '';
+    $lname = $_SESSION['user_lastname'] ?? '';
+    $action_by = trim($fname . " " . $lname) ?: ($_SESSION['full_name'] ?? 'System');
+    $action_at = date('Y-m-d H:i:s');
 
     try {
         // 1. อัปเดตสถานะเครื่องตรวจเป็น 1 (พร้อม)
         $sql_update_ins = "UPDATE automate_model 
-                           SET ref_atm_status_manual_id = 1, 
-                                inst_training_status = 1,
-                                atm_model_updatedBy = ? 
-                           WHERE atm_model_id IN ($ins_ids)";
+                   SET ref_atm_status_manual_id = 1, 
+                       atm_model_updatedBy = ?
+                   WHERE atm_model_id IN ($ins_ids)";
         $stmt1 = $db->prepare($sql_update_ins);
         $stmt1->bind_param("s", $confirm_by);
         $stmt1->execute();
@@ -104,6 +107,13 @@ if ($training_id > 0 && !empty($ins_ids)) {
         $stmt2 = $db->prepare($sql_update_train);
         $stmt2->bind_param("si", $confirm_by, $training_id);
         $stmt2->execute();
+
+        // update training_prosess_id=0
+        $stmt_prosess = $db->prepare("UPDATE instrument_training_items 
+                                  SET training_prosess_id = 0 
+                                  WHERE training_id = ?");
+        $stmt_prosess->bind_param("i", $training_id);
+        $stmt_prosess->execute();
 
         $db->commit();
 

@@ -1,6 +1,9 @@
 <?php
 require __DIR__ . '/config/auth.php';
-include($_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/authentication.php');
+$auth_path = $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instruments/authentication.php';
+if (file_exists($auth_path)) {
+    include($auth_path);
+}
 $act = $_GET['act'] ?? 'manual_guide';
 
 switch ($act) {
@@ -59,6 +62,10 @@ switch ($act) {
 
     case 'update_training_detail':
         require __DIR__ . '/training/oop/training_history_detail.php';
+        break;
+
+    case 'livesearch_api':
+        require __DIR__ . '/oop/livesearch_api.php';
         break;
 
     default:

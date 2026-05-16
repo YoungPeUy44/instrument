@@ -4,9 +4,16 @@
     --border-radius-card: 1rem;
 }
 body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-    /* min-height: 100vh;
-    padding: 2rem 0; */
+    /* background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%); */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+html, body {
+    height: 100%;
+}
+body > .container {
+    flex: 1;  /* ให้ container ขยายเต็มพื้นที่ที่เหลือ */
 }
 .card-custom {
     border: none;
@@ -252,3 +259,11 @@ tr.status-cancelled {
     border-top-right-radius: calc(1rem - 1px) !important;
 }
 
+.modal-header,
+.modal-footer {
+    flex-shrink: 0;
+}
+
+.modal-body {
+    flex: 1;
+}

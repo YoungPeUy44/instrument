@@ -7,6 +7,7 @@ $stmt_info->execute();
 $info = $stmt_info->get_result()->fetch_assoc();
 
 $setup_res = $db->query("SELECT * FROM instrument_setup_images WHERE instrument_id = $ins_id ORDER BY sort_order ASC");
+                         
 $run_res   = $db->query("SELECT * FROM instrument_run_images WHERE instrument_id = $ins_id ORDER BY sort_order ASC");
 ?>
 
@@ -121,20 +122,29 @@ $run_res   = $db->query("SELECT * FROM instrument_run_images WHERE instrument_id
             <i class="bi bi-save me-1"></i> บันทึกลำดับ
         </button>
     </div>
-    <div class="card-body bg-light">
         <div id="setup-sortable" class="sortable-list">
             <?php $i=1; while($s = $setup_res->fetch_assoc()): ?>
                 <div class="sortable-item shadow-sm" data-id="<?= $s['setup_id'] ?>">
                     <div class="drag-handle"><i class="bi bi-grip-vertical"></i></div>
                     <img src="<?= img_src($s['file_name']) ?>" class="sortable-img" onerror="this.src='<?= BASE_URL ?>assets/imgs/ins_setup/noImage.jpg'">
-                    <div class="sortable-info">รูปที่ <?= $i++ ?> <small class="text-muted ms-2">(<?= htmlspecialchars($s['file_name']) ?>)</small></div>
+                    <div class="sortable-info">
+                        <div>รูปที่ <?= $i++ ?> <small class="text-muted ms-2">(<?= htmlspecialchars($s['file_name']) ?>)</small></div>
+                        <!-- แสดงชื่อผู้อัปโหลดและเวลา -->
+                        <div class="d-flex flex-wrap gap-2 mb-1" style="font-size: 0.75rem; font-weight: normal;">
+                            <span class="text-muted fw-bold">
+                                <i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($s['uploaded_by'] ?? 'ไม่ระบุ') ?>
+                            </span>
+                            <span class="text-muted">
+                                <i class="bi bi-clock me-1"></i><?= !empty($s['uploaded_at']) ? date('d/m/Y H:i', strtotime($s['uploaded_at'])) : '-' ?>
+                            </span>
+                        </div>
+                    </div>
                     <button type="button" class="btn-delete-item" onclick="deleteImgPOST('setup', '<?= $s['setup_id'] ?>', '<?= $ins_id ?>', '<?= BASE_URL ?>')">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
             <?php endwhile; ?>
         </div>
-    </div>
 </div>
 
 <div class="card shadow-sm border-0 mb-4">
@@ -144,18 +154,41 @@ $run_res   = $db->query("SELECT * FROM instrument_run_images WHERE instrument_id
             <i class="bi bi-save me-1"></i> บันทึกลำดับ
         </button>
     </div>
-    <div class="card-body bg-light">
+    
         <div id="run-sortable" class="sortable-list">
-            <?php $j=1; while($r = $run_res->fetch_assoc()): ?>
-                <div class="sortable-item shadow-sm" data-id="<?= $r['run_id'] ?>">
-                    <div class="drag-handle"><i class="bi bi-grip-vertical"></i></div>
-                    <img src="<?= img_src($r['file_name']) ?>" class="sortable-img" onerror="this.src='<?= BASE_URL ?>assets/imgs/ins_setup/noImage.jpg'">
-                    <div class="sortable-info">รูปที่ <?= $j++ ?> <small class="text-muted ms-2">(<?= htmlspecialchars($r['file_name']) ?>)</small></div>
-                    <button type="button" class="btn-delete-item" onclick="deleteImgPOST('run', '<?= $r['run_id'] ?>', '<?= $ins_id ?>', '<?= BASE_URL ?>')">
-                        <i class="bi bi-trash"></i>
-                    </button>
+        <?php $j=1; while($r = $run_res->fetch_assoc()): ?>
+            <div class="sortable-item shadow-sm" data-id="<?= $r['run_id'] ?>">
+                <!-- จุดจับลาก -->
+                <div class="drag-handle"><i class="bi bi-grip-vertical"></i></div>
+                
+                <!-- รูปภาพประกอบ -->
+                <img src="<?= img_src($r['file_name']) ?>" class="sortable-img" onerror="this.src='<?= BASE_URL ?>assets/imgs/ins_setup/noImage.jpg'">
+                
+                <div class="sortable-info">
+                    <!-- บรรทัดล่าง: ลำดับรูปและชื่อไฟล์ -->
+                    <div class="text-dark">
+                        รูปที่ <?= $j++ ?> 
+                        <small class="text-muted ms-1">(<?= htmlspecialchars($r['file_name']) ?>)</small>
+                    </div>
+                    <!-- บรรทัดบน: ชื่อผู้อัปโหลด (ซ้ายสุด) และเวลา -->
+                    <div class="d-flex flex-wrap gap-2 mb-1" style="font-size: 0.75rem; font-weight: normal;">
+                        <span class="text-muted fw-bold">
+                            <i class="bi bi-person-circle me-1"></i>
+                            <?= htmlspecialchars($r['uploaded_by'] ?? 'ไม่ระบุ') ?>
+                        </span>
+                        <span class="text-muted">
+                            <i class="bi bi-clock me-1"></i>
+                            <?= !empty($r['uploaded_at']) ? date('d/m/Y H:i', strtotime($r['uploaded_at'])) : '-' ?>
+                        </span>
+                    </div>
                 </div>
-            <?php endwhile; ?>
-        </div>
+
+                <!-- ปุ่มลบรูป -->
+                <button type="button" class="btn-delete-item" onclick="deleteImgPOST('run', '<?= $r['run_id'] ?>', '<?= $ins_id ?>', '<?= BASE_URL ?>')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        <?php endwhile; ?>
     </div>
+    
 </div>
