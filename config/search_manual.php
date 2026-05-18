@@ -17,8 +17,8 @@ require_once __DIR__ . '/helpers.php';
 $conn = db();
 $conn->set_charset('utf8mb4');
 
-// FIX: เช็คสิทธิ์แก้ไข (checkLevel ≥ 2) แล้วส่งกลับไปใน JSON
-// เพื่อให้ JS ฝั่ง renderTable/renderMobile รู้ว่าต้องแสดงปุ่มแก้ไขหรือไม่
+// FIX: อ่าน session โดยตรง ไม่ต้องพึ่ง checkLevel() จาก permission.php
+// logic เดียวกับ checkLevel($level) => (int)user_instrument >= $level
 $can_edit = (int)$_SESSION['user_instrument'] >= 2;
 
 $kw          = trim($_GET['kw'] ?? '');
@@ -43,7 +43,19 @@ if ($category_id > 0) {
     $params[] = $category_id;
     $types   .= "i";
 }
-if ($status_id > 0) {
+// "incomplete" = ref_atm_status_manual_id=2 AND setup_comfirmed_tmp=0
+$filter_incomplete = ($_GET['status_id'] ?? '') === 'incomplete';
+if ($filter_incomplete) {
+    // ข้อมูลไม่ครบ = status=2 AND setup_comfirmed_tmp=0
+    $where[]  = "m.ref_atm_status_manual_id = 2";
+    $where[]  = "m.setup_comfirmed_tmp = 0";
+} elseif ($status_id === 2) {
+    // ไม่พร้อม = status=2 AND setup_comfirmed_tmp != 0 (แยกออกจากข้อมูลไม่ครบ)
+    $where[]  = "m.ref_atm_status_manual_id = ?";
+    $where[]  = "m.setup_comfirmed_tmp != 0";
+    $params[] = $status_id;
+    $types   .= "i";
+} elseif ($status_id > 0) {
     $where[]  = "m.ref_atm_status_manual_id = ?";
     $params[] = $status_id;
     $types   .= "i";
@@ -69,6 +81,7 @@ $stmt = $conn->prepare("
     SELECT i.ins_id,
            m.atm_model_name  AS name,
            m.ref_atm_status_manual_id,
+           m.setup_comfirmed_tmp,
            c.atm_category_name,
            t.cable_name,
            i.equipment_image,
@@ -95,6 +108,7 @@ while ($row = $res->fetch_assoc()) {
         'ins_id'                   => (int)$row['ins_id'],
         'name'                     => $row['name'],
         'ref_atm_status_manual_id' => (int)$row['ref_atm_status_manual_id'],
+        'setup_comfirmed_tmp'      => (int)$row['setup_comfirmed_tmp'],
         'atm_category_name'        => $row['atm_category_name'] ?? '—',
         'cable_name'               => $row['cable_name'] ?? '—',
         'equipment_image'          => $row['equipment_image'] ?? '',
@@ -107,7 +121,6 @@ echo json_encode([
     'page'     => $page,
     'limit'    => $limit,
     'pages'    => (int)ceil($total / $limit),
-    'can_edit' => $can_edit, // FIX: เพิ่ม field นี้เพื่อให้ JS แสดงปุ่มแก้ไขได้ถูกต้อง
-    'debug_session' => $_SESSION['user_instrument'] ?? 'NOT SET',
+    'can_edit' => $can_edit,
     'data'     => $data,
 ], JSON_UNESCAPED_UNICODE);

@@ -38,7 +38,6 @@ require_once __DIR__ . '/../db/db.php';
 require_once __DIR__ . '/../config/auth.php';
 require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/../config/permission.php';
-$can_edit = checkLevel(2);
 
 
 $connpeuy = db();
@@ -49,7 +48,9 @@ $kw          = isset($_GET['kw']) ? trim($_GET['kw']) : '';
 $category_id = isset($_GET['category_id']) ? (int)$_GET['category_id'] : 0;
 $sort        = $_GET['sort'] ?? 'desc'; 
 $sort_order  = ($sort === 'asc') ? 'ASC' : 'DESC';
-$status_id   = isset($_GET['status_id']) ? (int)$_GET['status_id'] : 0;
+$status_id        = isset($_GET['status_id']) ? $_GET['status_id'] : 0;
+$filter_incomplete = $status_id === 'incomplete';
+if (!$filter_incomplete) $status_id = (int)$status_id;
 
 $items_per_page = 10; 
 $current_page   = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -85,7 +86,17 @@ if ($category_id > 0) {
     $types .= "i";
 }
 // ⭐ ย้ายมาอยู่ในชุดเดียวกัน
-if ($status_id > 0) {
+if ($filter_incomplete) {
+    // ข้อมูลไม่ครบ = status=2 AND setup_comfirmed_tmp=0
+    $where_clauses[] = "m.ref_atm_status_manual_id = 2";
+    $where_clauses[] = "m.setup_comfirmed_tmp = 0";
+} elseif ($status_id === 2) {
+    // ไม่พร้อม = status=2 AND setup_comfirmed_tmp != 0 (แยกออกจากข้อมูลไม่ครบ)
+    $where_clauses[] = "m.ref_atm_status_manual_id = ?";
+    $where_clauses[] = "m.setup_comfirmed_tmp != 0";
+    $params[] = $status_id;
+    $types .= "i";
+} elseif ($status_id > 0) {
     $where_clauses[] = "m.ref_atm_status_manual_id = ?";
     $params[] = $status_id;
     $types .= "i";
@@ -106,6 +117,7 @@ $total_pages = ceil($total_items / $items_per_page);
 $sql = "SELECT i.*, 
                m.atm_model_name AS name, 
                m.ref_atm_status_manual_id, -- ดึง ID สถานะมาจาก automate_model
+               m.setup_comfirmed_tmp,
                c.atm_category_name AS category_name, 
                t.cable_name
         FROM instruments i
@@ -205,6 +217,7 @@ $result = $stmt->get_result();
                 <option value="1" <?= ($status_id == 1) ? 'selected' : '' ?>>พร้อม</option>
                 <option value="3" <?= ($status_id == 3) ? 'selected' : '' ?>>รอเทรน</option>
                 <option value="2" <?= ($status_id == 2) ? 'selected' : '' ?>>ไม่พร้อม</option>
+                <option value="incomplete" <?= $filter_incomplete ? 'selected' : '' ?>>ข้อมูลไม่ครบ</option>
             </select>
         </div>
         <div class="col-12 col-md-2">
@@ -265,7 +278,8 @@ $result = $stmt->get_result();
                   <!-- สถานะคู่มือ -->
                   <td class="text-center">
                     <?php
-                        $s_id = $row['ref_atm_status_manual_id'];
+                        $s_id          = (int)$row['ref_atm_status_manual_id'];
+                        $status_id_tmp = (int)($row['setup_comfirmed_tmp'] ?? 1);
                         if ($s_id == 1): ?>
                         <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
                         <i class="bi bi-check-circle-fill me-1"></i>พร้อม
@@ -273,6 +287,10 @@ $result = $stmt->get_result();
                         <?php elseif ($s_id == 3): ?>
                         <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill text-dark">
                         <i class="bi bi-clock-history me-1"></i>รอเทรน
+                        </span>
+                        <?php elseif ($s_id == 2 && $status_id_tmp == 0): ?>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">
+                        <i class="bi bi-exclamation-circle-fill me-1"></i>ข้อมูลไม่ครบ
                         </span>
                         <?php else: ?>
                         <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">
@@ -365,7 +383,8 @@ $result = $stmt->get_result();
 
                             <div class="mb-2">
                                 <?php
-                                $s_id = $row['ref_atm_status_manual_id'];
+                                $s_id          = (int)$row['ref_atm_status_manual_id'];
+                                $status_id_tmp = (int)($row['setup_comfirmed_tmp'] ?? 1);
                                 if ($s_id == 1): ?>
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 0.65rem;">
                                         <i class="bi bi-check-circle-fill me-1"></i>พร้อม
@@ -373,6 +392,10 @@ $result = $stmt->get_result();
                                 <?php elseif ($s_id == 3): ?>
                                     <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill text-dark" style="font-size: 0.65rem;">
                                         <i class="bi bi-clock-history me-1"></i>รอเทรน
+                                    </span>
+                                <?php elseif ($s_id == 2 && $status_id_tmp == 0): ?>
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill" style="font-size: 0.65rem;">
+                                        <i class="bi bi-exclamation-circle-fill me-1"></i>ข้อมูลไม่ครบ
                                     </span>
                                 <?php else: ?>
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill" style="font-size: 0.65rem;">
@@ -445,7 +468,7 @@ $result = $stmt->get_result();
     const BASE_URL        = '<?= BASE_URL ?>';
     const BASE_SEARCH_URL = '<?= BASE_URL ?>config/search_manual.php';
 </script>
-<script src="<?= BASE_URL ?>assets/js/manual_guide.js"></script>
+<!-- <script src="<?= BASE_URL ?>assets/js/manual_guide.js"></script> -->
 <script>
     // ====== Live Filter — พิมพ์แล้วกรองตารางทันที ======
     // $("#searchIns").on("input", function() {
@@ -530,5 +553,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-

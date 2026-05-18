@@ -126,7 +126,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
      * [SECTION 3] แยกประมวลผลตาม Mode
      */
     if ($mode === 'basic') {
-        $status_manual_id = (int) ($_POST['status_selector'] ?? 1);
         $cable_type_id = (int) ($_POST['cable_type_id'] ?? 0);
         $config_text = $_POST['config_text'] ?? '';
 
@@ -136,21 +135,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $params[] = $cable_type_id;
         $params[] = $config_text;
         $types .= "is";
-        
-        // อัปเดตตาราง automate_model (สถานะ/ผู้แก้ไข)
-        $sql_status = "UPDATE automate_model 
-                       SET ref_atm_status_manual_id = ?, 
-                           atm_model_updatedBy = ?, 
-                           atm_model_updatedAt = NOW() 
-                       WHERE atm_model_id = ?";
 
-        $stmt_status = $conn->prepare($sql_status);
-        if ($stmt_status) {
-            $stmt_status->bind_param("isi", $status_manual_id, $full_name, $ins_id);
-            $stmt_status->execute();
-            $stmt_status->close();
+        // FIX: ลบการ update ref_atm_status_manual_id ออก
+        // สถานะถูกจัดการแยกต่างหากผ่าน AJAX (status_selector block ด้านบน)
+        $stmt_model = $conn->prepare("UPDATE automate_model SET atm_model_updatedBy = ?, atm_model_updatedAt = NOW(), setup_comfirmed_tmp = 1 WHERE atm_model_id = ?");
+        if ($stmt_model) {
+            $stmt_model->bind_param("si", $full_name, $ins_id);
+            $result = $stmt_model->execute();
+            error_log("[debug] stmt_model execute=$result affected=" . $stmt_model->affected_rows . " ins_id=$ins_id");
+            $stmt_model->close();
         } else {
-            die("SQL Prepare Error (automate_model): " . $conn->error); 
+            error_log("[debug] stmt_model prepare failed: " . $conn->error);
         }
 
     } elseif ($mode === 'upload') {
@@ -242,14 +237,28 @@ function uploadCustomFiles($files, $path, $conn, $ins_id, $table, $prefix, $maxS
             $new_name = $prefix . '_' . substr(uniqid(), -5) . '_' . $i . '.' . $ext;
 
             if (move_uploaded_file($files['tmp_name'][$i], $path . $new_name)) {
-                // ✅ เพิ่มคอลัมน์ uploaded_by เข้าไปในการ INSERT
-                $sql = "INSERT INTO $table (instrument_id, file_name, uploaded_by, sort_order) VALUES (?, ?, ?, ?)";
-                $stmt = $conn->prepare($sql);
-                
-                // หาค่า sort_order ล่าสุดก่อน insert (ถ้าจำเป็น) หรือใส่เป็น 0 ไว้ก่อน
-                $order = 0; 
-                
-                $stmt->bind_param("issi", $ins_id, $new_name, $uploader_name, $order);
+
+                // FIX: แยก SQL ตามตาราง เพราะ instrument_determination ไม่มี uploaded_by และ sort_order
+                if ($table === 'instrument_determination') {
+                    $sql  = "INSERT INTO $table (instrument_id, file_name) VALUES (?, ?)";
+                    $stmt = $conn->prepare($sql);
+                    if (!$stmt) {
+                        error_log("prepare failed [$table]: " . $conn->error);
+                        continue;
+                    }
+                    $stmt->bind_param("is", $ins_id, $new_name);
+                } else {
+                    // instrument_setup_images, instrument_run_images
+                    $sql   = "INSERT INTO $table (instrument_id, file_name, uploaded_by, sort_order) VALUES (?, ?, ?, ?)";
+                    $stmt  = $conn->prepare($sql);
+                    if (!$stmt) {
+                        error_log("prepare failed [$table]: " . $conn->error);
+                        continue;
+                    }
+                    $order = 0;
+                    $stmt->bind_param("issi", $ins_id, $new_name, $uploader_name, $order);
+                }
+
                 $stmt->execute();
                 $stmt->close();
             }

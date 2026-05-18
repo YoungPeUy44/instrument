@@ -1,8 +1,8 @@
 <?php
     if (session_status() === PHP_SESSION_NONE) { session_start(); }
 // 1. ดึงระบบ Auto-Login สำหรับ Local (ถ้ามีไฟล์แยกให้ require มา)
-require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php'; //local
-// $permission_path = __DIR__ . '/../config/permission.php'; //proguction
+// require_once $_SERVER['DOCUMENT_ROOT'] . '/xct/alt/instrument/config/permission.php'; //local
+$permission_path = __DIR__ . '/../config/permission.php'; //proguction
 
 // 2. เช็คสิทธิ์: ถ้าไม่มี Session หรือ สิทธิ์น้อยกว่า 1 (สิทธิ์ 0) ให้ดีดออก
 if (!isset($_SESSION['user_instrument']) || (int)$_SESSION['user_instrument'] < 1) { 
@@ -48,7 +48,9 @@ $kw          = isset($_GET['kw']) ? trim($_GET['kw']) : '';
 $category_id = isset($_GET['category_id']) ? (int)$_GET['category_id'] : 0;
 $sort        = $_GET['sort'] ?? 'desc'; 
 $sort_order  = ($sort === 'asc') ? 'ASC' : 'DESC';
-$status_id   = isset($_GET['status_id']) ? (int)$_GET['status_id'] : 0;
+$status_id        = isset($_GET['status_id']) ? $_GET['status_id'] : 0;
+$filter_incomplete = $status_id === 'incomplete';
+if (!$filter_incomplete) $status_id = (int)$status_id;
 
 $items_per_page = 10; 
 $current_page   = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -84,7 +86,10 @@ if ($category_id > 0) {
     $types .= "i";
 }
 // ⭐ ย้ายมาอยู่ในชุดเดียวกัน
-if ($status_id > 0) {
+if ($filter_incomplete) {
+    $where_clauses[] = "m.ref_atm_status_manual_id = 2";
+    $where_clauses[] = "m.setup_comfirmed_tmp = 0";
+} elseif ($status_id > 0) {
     $where_clauses[] = "m.ref_atm_status_manual_id = ?";
     $params[] = $status_id;
     $types .= "i";
@@ -105,6 +110,7 @@ $total_pages = ceil($total_items / $items_per_page);
 $sql = "SELECT i.*, 
                m.atm_model_name AS name, 
                m.ref_atm_status_manual_id, -- ดึง ID สถานะมาจาก automate_model
+               m.setup_comfirmed_tmp,
                c.atm_category_name AS category_name, 
                t.cable_name
         FROM instruments i
@@ -151,7 +157,7 @@ $result = $stmt->get_result();
 <body class="bg-light">
   <div class="container py-4">
     <div class="d-flex align-items-center mb-3">
-      <a href="../" class="btn btn-outline-primary me-3 shadow-sm border-2 rounded-3" title="กลับหน้าหลักระบบ">
+      <a href="../alt/timeline" class="btn btn-outline-primary me-3 shadow-sm border-2 rounded-3" title="กลับหน้าหลักระบบ">
         <i class="bi bi-house-door-fill"></i>
       </a>
       <h1 class="h3 mb-0 fw-bold d-flex justify-content-between align-items-center w-100">
@@ -183,7 +189,7 @@ $result = $stmt->get_result();
         <div class="col-12 col-md-5">
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" id="liveSearch" name="kw" class="form-control border-start-0"
+                <input type="text" id="searchIns" name="kw" class="form-control border-start-0"
                        placeholder="ค้นหาชื่อเครื่องตรวจ..." value="<?= htmlspecialchars($kw) ?>"
                        autocomplete="off">
             </div>
@@ -204,6 +210,7 @@ $result = $stmt->get_result();
                 <option value="1" <?= ($status_id == 1) ? 'selected' : '' ?>>พร้อม</option>
                 <option value="3" <?= ($status_id == 3) ? 'selected' : '' ?>>รอเทรน</option>
                 <option value="2" <?= ($status_id == 2) ? 'selected' : '' ?>>ไม่พร้อม</option>
+                <option value="incomplete" <?= $filter_incomplete ? 'selected' : '' ?>>ข้อมูลไม่ครบ</option>
             </select>
         </div>
         <div class="col-12 col-md-2">
@@ -244,7 +251,7 @@ $result = $stmt->get_result();
               <th style="width:80px;" class="text-center">จัดการ</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="tableBody">
             <?php if ($result->num_rows === 0): ?>
               <tr><td colspan="6" class="text-center text-muted p-5">ไม่พบข้อมูลเครื่องตรวจ</td></tr>
             <?php else: ?>
@@ -264,7 +271,8 @@ $result = $stmt->get_result();
                   <!-- สถานะคู่มือ -->
                   <td class="text-center">
                     <?php
-                        $s_id = $row['ref_atm_status_manual_id'];
+                        $s_id          = (int)$row['ref_atm_status_manual_id'];
+                        $status_id_tmp = (int)($row['setup_comfirmed_tmp'] ?? 1);
                         if ($s_id == 1): ?>
                         <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
                         <i class="bi bi-check-circle-fill me-1"></i>พร้อม
@@ -272,6 +280,10 @@ $result = $stmt->get_result();
                         <?php elseif ($s_id == 3): ?>
                         <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill text-dark">
                         <i class="bi bi-clock-history me-1"></i>รอเทรน
+                        </span>
+                        <?php elseif ($s_id == 2 && $status_id_tmp == 0): ?>
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">
+                        <i class="bi bi-exclamation-circle-fill me-1"></i>ข้อมูลไม่ครบ
                         </span>
                         <?php else: ?>
                         <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">
@@ -316,7 +328,7 @@ $result = $stmt->get_result();
     </div>
     
 <!-- มือถือ -->
-  <div class="d-md-none px-2">
+  <div class="d-md-none px-2" id="mobileList">
     <?php if ($result->num_rows === 0): ?>
         <div class="text-center p-5 text-muted bg-white rounded-4 shadow-sm">
             ไม่พบข้อมูลเครื่องตรวจ
@@ -364,7 +376,8 @@ $result = $stmt->get_result();
 
                             <div class="mb-2">
                                 <?php
-                                $s_id = $row['ref_atm_status_manual_id'];
+                                $s_id          = (int)$row['ref_atm_status_manual_id'];
+                                $status_id_tmp = (int)($row['setup_comfirmed_tmp'] ?? 1);
                                 if ($s_id == 1): ?>
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 0.65rem;">
                                         <i class="bi bi-check-circle-fill me-1"></i>พร้อม
@@ -372,6 +385,10 @@ $result = $stmt->get_result();
                                 <?php elseif ($s_id == 3): ?>
                                     <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill text-dark" style="font-size: 0.65rem;">
                                         <i class="bi bi-clock-history me-1"></i>รอเทรน
+                                    </span>
+                                <?php elseif ($s_id == 2 && $status_id_tmp == 0): ?>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 0.65rem;">
+                                        <i class="bi bi-exclamation-circle-fill me-1"></i>ข้อมูลไม่ครบ
                                     </span>
                                 <?php else: ?>
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill" style="font-size: 0.65rem;">
@@ -397,22 +414,24 @@ $result = $stmt->get_result();
         <?php endwhile; ?>
     <?php endif; ?>
 </div>
-
-    <nav class="py-3">
+<!-- แบ่งหน้า -->
+    <nav class="py-3" id="paginationWrap">
         <ul class="pagination pagination-sm justify-content-center mb-0">
             <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
-                <a class="page-link shadow-sm mx-1 rounded-3" href="?act=manual_guide&page=<?= $current_page-1 ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>">
+                <a class="page-link shadow-sm mx-1 rounded-3" 
+                href="?act=manual_guide&page=<?= $current_page-1 ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>&status_id=<?= $status_id ?>">
                     <i class="bi bi-chevron-left"></i>
                 </a>
             </li>
 
             <?php
-            $window = 2; // จำนวนเลขหน้ารอบหน้าปัจจุบัน
+            $window = 2;
             for ($p = 1; $p <= $total_pages; $p++) {
                 if ($p == 1 || $p == $total_pages || ($p >= $current_page - $window && $p <= $current_page + $window)) {
                     ?>
                     <li class="page-item <?= ($p == $current_page) ? 'active' : '' ?>">
-                        <a class="page-link shadow-sm mx-1 rounded-3" href="?act=manual_guide&page=<?= $p ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>">
+                        <a class="page-link shadow-sm mx-1 rounded-3" 
+                        href="?act=manual_guide&page=<?= $p ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>&status_id=<?= $status_id ?>">
                             <?= $p ?>
                         </a>
                     </li>
@@ -425,7 +444,8 @@ $result = $stmt->get_result();
             ?>
 
             <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
-                <a class="page-link shadow-sm mx-1 rounded-3" href="?act=manual_guide&page=<?= $current_page+1 ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>">
+                <a class="page-link shadow-sm mx-1 rounded-3" 
+                href="?act=manual_guide&page=<?= $current_page+1 ?>&kw=<?= urlencode($kw) ?>&category_id=<?= $category_id ?>&status_id=<?= $status_id ?>">
                     <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
@@ -436,30 +456,36 @@ $result = $stmt->get_result();
 <?php include __DIR__ . '/../includes/footer.php'; ?>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const BASE_URL        = '<?= BASE_URL ?>';
+    const BASE_SEARCH_URL = '<?= BASE_URL ?>config/search_manual.php';
+</script>
+<!-- <script src="<?= BASE_URL ?>assets/js/manual_guide.js"></script> -->
 <script>
     // ====== Live Filter — พิมพ์แล้วกรองตารางทันที ======
-    $("#liveSearch").on("input", function() {
-        const val = $(this).val().toLowerCase().trim();
-        let count = 0;
+    // $("#searchIns").on("input", function() {
+    //     const val = $(this).val().toLowerCase().trim();
+    //     let count = 0;
 
-        $(".table-custom tbody tr").each(function() {
-            // ค้นหาจากคอลัมน์ชื่อเครื่องตรวจ (td ที่ 2) และ ID (td ที่ 1)
-            const name = $(this).find("td:eq(1)").text().toLowerCase();
-            const id   = $(this).find("td:eq(1) small, td:eq(1)").text().toLowerCase();
-            const match = val === "" || name.includes(val) || id.includes(val);
-            $(this).toggle(match);
-            if (match) count++;
-        });
+    //     $(".table-custom tbody tr").each(function() {
+    //         // ค้นหาจากคอลัมน์ชื่อเครื่องตรวจ (td ที่ 2) และ ID (td ที่ 1)
+    //         const name = $(this).find("td:eq(1)").text().toLowerCase();
+    //         const id   = $(this).find("td:eq(1) small, td:eq(1)").text().toLowerCase();
+    //         const match = val === "" || name.includes(val) || id.includes(val);
+    //         $(this).toggle(match);
+    //         if (match) count++;
+    //     });
 
-        $("#no-results").remove();
-        if (count === 0 && val !== "") {
-            $(".table-custom tbody").append(
-                '<tr id="no-results"><td colspan="10" class="text-center py-5 text-muted">' +
-                '<i class="bi bi-search d-block mb-2" style="font-size:2rem;opacity:.3"></i>' +
-                'ไม่พบเครื่องตรวจที่ค้นหา</td></tr>'
-            );
-        }
-    });
+    //     $("#no-results").remove();
+    //     if (count === 0 && val !== "") {
+    //         $(".table-custom tbody").append(
+    //             '<tr id="no-results"><td colspan="10" class="text-center py-5 text-muted">' +
+    //             '<i class="bi bi-search d-block mb-2" style="font-size:2rem;opacity:.3"></i>' +
+    //             'ไม่พบเครื่องตรวจที่ค้นหา</td></tr>'
+    //         );
+    //     }
+    // });
 
 document.addEventListener('DOMContentLoaded', function() {
     // 1. จัดการ Error Script จาก PHP
@@ -518,9 +544,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="<?= BASE_URL ?>assets/js/manual_guide.js"></script>
 </body>
 </html>
-
-

@@ -135,9 +135,9 @@ function renderTable(data, can_edit = false) {
 
     let html = '';
     data.forEach(row => {
-        const badge  = statusBadge(row.ref_atm_status_manual_id);
+        const badge  = statusBadge(row.ref_atm_status_manual_id, false, row.setup_comfirmed_tmp);
         const imgSrc = row.equipment_image
-            ? `${BASE_URL}assets/imgs/instruments/${row.equipment_image}`
+            ? `${BASE_URL}assets/imgs/ins_setup/${row.equipment_image}`
             : `${BASE_URL}assets/imgs/ins_setup/noImage.jpg`;
 
         html += `
@@ -197,9 +197,9 @@ function renderMobile(data, can_edit = false) {
 
     let html = '';
     data.forEach(row => {
-        const badge  = statusBadge(row.ref_atm_status_manual_id, true);
+        const badge  = statusBadge(row.ref_atm_status_manual_id, true, row.setup_comfirmed_tmp);
         const imgSrc = row.equipment_image
-            ? `${BASE_URL}assets/imgs/instruments/${row.equipment_image}`
+            ? `${BASE_URL}assets/imgs/ins_setup/${row.equipment_image}`
             : `${BASE_URL}assets/imgs/ins_setup/noImage.jpg`;
 
         html += `
@@ -292,10 +292,12 @@ function renderPagination(total, page, limit, pages) {
 }
 
 // ── helpers ──
-function statusBadge(id, small = false) {
+function statusBadge(id, small = false, setup_comfirmed_tmp = 1) {
     const sz = small ? 'font-size:0.65rem;' : '';
     if (id == 1) return `<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="${sz}"><i class="bi bi-check-circle-fill me-1"></i>พร้อม</span>`;
     if (id == 3) return `<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill text-dark" style="${sz}"><i class="bi bi-clock-history me-1"></i>รอเทรน</span>`;
+    // FIX: เพิ่มสถานะ "ข้อมูลไม่ครบ" เมื่อ ref_atm_status_manual_id=2 และ setup_comfirmed_tmp=0
+    if (id == 2 && setup_comfirmed_tmp == 0) return `<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="${sz}"><i class="bi bi-exclamation-circle-fill me-1"></i>ข้อมูลไม่ครบ</span>`;
     return `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill" style="${sz}"><i class="bi bi-dash-circle me-1"></i>ไม่พร้อม</span>`;
 }
 

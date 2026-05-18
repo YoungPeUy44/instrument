@@ -127,7 +127,7 @@ if ($ins_id > 0 && !$item) {
                      <?php
                         $current_status  = (int)$item['ref_atm_status_manual_id'];
                         $current_user_id = (int)($_SESSION['user_id'] ?? 0);
-                        $is_admin        = ($current_user_id === 17);
+                        $is_admin        = ($current_user_id === 3);
                         ?>
 
                         <div class="btn-group shadow-sm" role="group">
